@@ -27,8 +27,7 @@ Bu senaryo telefon hattı altyapısını kullanır.
 * **Bağlantı Akışı:** Tablet veya telefon kullanıyorsan kabloyla uğraşmazsın. **Wireless LAN** (veya yaygın adıyla **Wi-Fi**) kullanırsın.
 * **Cihaz:** Burada merkezde bir **Router** vardır.
 * **Teknoloji:** Router, internet ile konuşmak için **DSL** teknolojisini kullanır.
-
-> **🚧 [GNS3/Görsel Notu - CCNA-1]:**
+![image](CCNA-1.png)
 
 Burası için basit bir "Home Network" topolojisi kuracağız. Bir tarafta PC (Ethernet ile bağlı), diğer tarafta Tablet (Wi-Fi ile bağlı) ve bunları internete çıkaran bir Router simüle edeceğiz.
 
