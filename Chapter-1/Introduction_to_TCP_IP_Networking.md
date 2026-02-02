@@ -123,7 +123,7 @@ Evdeki ağ ile koca bir şirketin ağı aslında "teknoloji" olarak birbirine ç
 * **Enterprise Network (Kurumsal Ağ):** Büyük bir şirket tarafından, çalışanların birbiriyle iletişim kurması için inşa edilen dev ağlardır.
 * **SOHO (Small Office/Home Office):** Evde iş için kurduğun veya küçük ofislerde kullanılan ufak ağlardır.
 
-### Benzerlik Nerede?
+#### Benzerlik Nerede?
 
 Bir **Enterprise Network** kullanıcısı olsan bile, deneyimin evdekine çok benzer:
 
