@@ -27,6 +27,7 @@ Bu senaryo telefon hattı altyapısını kullanır.
 * **Bağlantı Akışı:** Tablet veya telefon kullanıyorsan kabloyla uğraşmazsın. **Wireless LAN** (veya yaygın adıyla **Wi-Fi**) kullanırsın.
 * **Cihaz:** Burada merkezde bir **Router** vardır.
 * **Teknoloji:** Router, internet ile konuşmak için **DSL** teknolojisini kullanır.
+
 ![image](CCNA-1.png)
 
 Burası için basit bir "Home Network" topolojisi kuracağız. Bir tarafta PC (Ethernet ile bağlı), diğer tarafta Tablet (Wi-Fi ile bağlı) ve bunları internete çıkaran bir Router simüle edeceğiz.
@@ -131,7 +132,7 @@ Bir **Enterprise Network** kullanıcısı olsan bile, deneyimin evdekine çok be
 
 Fiziksel olarak yaptığın eylem aynıdır, ama arka planda (duvarın arkasında) dönen işler Enterprise ağlarda çok daha karmaşıktır.
 
-> **🚧 [GNS3/Görsel Notu - CCNA-2]:**
+![image](CCNA-1.png)
 
 Burası için "Enterprise" simülasyonu yapacağız. Evdeki basit modem yerine, profesyonel **Switch** ve **Router**'lar koyarak kurumsal bir yapının minyatürünü çizeceğiz.
 Zaten Home Network hallettik, modemimizi kurduk. Şimdi seviye atlıyoruz. Artık tek bir oda değil, koca bir ofis binasını yöneten mühendis kafasına geçiyoruz. Burası **Enterprise Network** dünyası.
