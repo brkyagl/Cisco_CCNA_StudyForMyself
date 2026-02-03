@@ -540,5 +540,63 @@ Yukarıdaki şemada basit gibi görünen işlem aslında şöyle gerçekleşir:
 
 İşte **Application Layer** (burada HTTP protokolü), Irem'in "Ver" demesiyle Berkay'ın "Al" demesi arasındaki o konuşma kurallarını belirleyen katmandır.
 
----
+### HTTP Protocol Mekanizması
 
+Uç noktalardaki (Endpoint) uygulamalar, yani Browser ve Server, birbirleriyle anlaşmak için **HTTP** dilini kullanır bunu öğrenmiştik.
+
+Bu protokol, 1990'ların başında **Tim Berners-Lee** tarafından icat edildi. Amacı basitti: Tarayıcılara dosya isteme (**Request**), sunuculara da bu dosyayı gönderme (**Reply**) yeteneği kazandırmak.
+
+> **Ufak Bir Not (URL/URI):**
+
+Web adreslerinin (URL veya URI denir) başındaki `http` veya `https` ibaresi, tarayıcıya "Bak bu sayfayı çekerken HTTP kurallarını kullanacaksın" emrini verir.
+
+### Mekanizma: Başlıklar ve Veri
+
+Protokollerin birbirine derdini anlatmak için kullandığı en önemli araç **Header (Başlık)** dediğimiz bilgi etiketleridir. 
+Bir mektubun zarfı gibi düşünebilirsin; zarfın üstünde adres yazar (Header), içinde ise mektup (Data) vardır.
+
+Hadi Irem ve Berkay arasındaki trafiği bu sefer teknik göz üzerinden inceleyelim.
+
+**[HTTP GET Request, Reply, ve Data Stream]**
+
+```text
+      Web Browser (Irem)                           Web Server (Berkay)
+      -----------------                           ------------------
+             |                                            |
+             |  (1) [HTTP Header: GET home.html]           |
+             | -----------------------------------------> |
+             |                                            |
+             |  (2) [HTTP Header: OK (200)] + [Data...]   |
+             | <----------------------------------------- |
+             |                                            |
+             |  (3) [Data: home.html'in Devamı]           |
+             | <----------------------------------------- |
+             |      (Header yok, sadece Data)             |
+
+```
+
+### Adım Adım Neler Oluyor?
+
+#### Adım 1: The Request (İstek)
+
+Irem, Berkay'a bir mesaj atar. Bu mesajın bir **HTTP Header**'ı vardır.
+
+* **Komut:** Header'ın içinde **GET** komutu yazar. Yani "Bana şu dosyayı getir".
+* **Dosya Adı:** Genelde dosya adı belirtilir (`home.html`). Eğer belirtilmezse sunucu otomatik olarak varsayılan ana sayfayı anlar.
+
+#### Adım 2: The Response (Yanıt ve Kodlar)
+
+Berkay mesajı alır ve cevap verir. Bu cevabın da bir **Header**'ı vardır.
+
+* **Return Code (Dönüş Kodu):** Berkay, işlemin sonucunu bir sayı ile bildirir.
+* **200:** "Her şey yolunda, işlem **OK**."
+* **404:** "Aradığın dosya bende yok (**Not Found**)." (Hani internette gördüğün o meşhur hata).
+* **Data:** Mesajın devamında istenen dosyanın (**home.html**) ilk parçası bulunur.
+
+#### Adım 3: Verimlilik ve Sadece Veri
+
+Burası çok zekice. Dosya büyükse tek pakete sığmaz, parça parça gelir.
+Berkay dosyanın geri kalanını gönderirken **artık Header koymaz.**
+**Neden?** Çünkü zaten anlaştılar, başlık ekleyip boşuna yer kaplamaya gerek yok. Sadece saf veriyi gönderir.
+
+---
