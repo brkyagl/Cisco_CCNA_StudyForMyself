@@ -257,3 +257,151 @@ Ama sen **CCNA** adayı olarak bunu bilmek zorundasın. Kitabın(CCNA  Official 
 Bizim işimiz; bu taşıma işlemini yapan, güvenli kılan ve hızlandıran o "**Enterprise Network**"leri nasıl inşa edeceğimizi öğrenmektir.
 
 ---
+
+## 5. TCP/IP Networking Model (Oyunun Kuralları)
+
+Ağ dünyasına girdiğinde sürekli duyacağın bir terim var: **Networking Model** (bazen **Networking Architecture** veya **Networking Blueprint** de denir).
+
+Peki nedir bu? Teknik olarak: Ağın çalışması için gereken her şeyi tanımlayan kapsamlı dokümanlar bütünüdür. Bizim dilimizde: **Bu işin anayasasıdır.**
+
+Bu dokümanlar iki ana şeyi belirler:
+
+1. **Protocol:** Cihazların iletişim kurmak için izlemesi gereken **mantıksal kurallar**. (Yazılım, dil, konuşma sırası).
+2. **Physical Requirements (Fiziksel Gereksinimler):** Kablonun içinden geçecek voltaj seviyesi, akım miktarı, kablo tipi gibi **donanımsal kurallar**.
+
+### Ev Planı Analojisi
+
+Bu "Networking Model" olayını en iyi bir **Ev İnşaatı Planı (Blueprint)** ile anlarsın.
+
+Diyelim ki bir ev yapacaksın. Kafana göre tuğla örüp, rastgele kablo çekebilir misin? Belki yaparsın ama o ev muhtemelen çöker veya musluktan elektrik çarpar.
+Bunun yerine bir **Blueprint** (Mimari Plan) kullanırsın.
+
+* **Neden Plan Kullanırız?**
+* Evin temeli sağlam olsun, çökmesin diye.
+* Tesisatçı, Elektrikçi ve Duvarcı birbirine engel olmadan çalışabilsin diye.
+Elektrikçi plana bakar, prizi nereye koyacağını bilir. Tesisatçı plana bakar, boruyu nereden geçireceğini bilir. Kimse kimsenin işini bozmaz.
+
+Ağ modelindeki kurallar sayesinde; kabloyu üreten firma, switch'i üreten firma ve bilgisayarı üreten firma birbirlerinden habersiz olsalar bile uyumlu ürünler yaparlar.
+
+### Neden Buna Muhtacız?
+
+Şöyle bir senaryo düşün: Kendi ağını kurmak istiyorsun.
+
+* Kendi yazılımını yazdın.
+* Kendi ağ kartını lehimledin.
+* Kendi kablo tipini icat ettin.
+
+Bunu yapabilir misin? Evet. Ama bu inanılmaz zordur ve senin cihazın dünyadaki başka hiçbir cihazla konuşamaz.
+
+Bunun yerine ne yapıyoruz? Gidip marketten **Well-known Networking Model** (herkesin bildiği ağ modeli) standartlarına uyan ürünler alıyoruz.
+Çünkü **Vendor**'lar (Cisco, HP, Dell gibi üreticiler), ürünlerini bu Blueprint'e sadık kalarak üretirler.
+
+Cisco marka bir Router ile, Dell marka bir Laptop, aralarında Samsung marka bir telefon olsa bile kusursuzca anlaşır. Çünkü hepsi aynı "Anayasayı" (Networking Model) okumuştur.
+
+---
+
+# 6. TCP/IP'ye Giden Tarihçe
+
+Bugün dünya genelinde bilgisayar ağları tek bir model kullanır: **TCP/IP**. Ancak dünya her zaman bu kadar basit değildi.
+"Bir zamanlar", TCP/IP dahil hiçbir ağ protokolü yoktu. **Vendors** (Üreticiler/Satıcılar) ilk ağ protokollerini kendileri yarattılar ve bu protokoller **sadece o markanın** bilgisayarlarını destekliyordu.
+
+### 1. Özel/Kapalı Modeller Çağı - 1980s
+
+1970'ler ve 80'lerde, pazarın devi **IBM** firmasıydı. 
+IBM, 1974'te **Systems Network Architecture (SNA)** adını verdiği kendi ağ modelini yayınladı. Diğer üreticiler de kendi modellerini çıkardı.
+
+**Sorun Neydi?**
+
+Eğer şirketin üç farklı markadan (Örn: IBM, DEC, HP) bilgisayar aldıysa, mühendisler üç ayrı ağ kurmak zorundaydı. Bu ağları birbirine bağlamak tam bir kabustu.
+Bunu şöyle düşün: Şirketteki IBM bilgisayarlar sadece Almanca, DEC bilgisayarlar sadece Japonca konuşuyor. Birbirlerini asla anlamıyorlar. Tercüman bulmak zorundasın.
+
+**[1980'ler - Parçalanmış Ağlar]**
+
+```text
+      [ IBM Network ]  <----->  (Sadece IBM Bilgisayarlar)
+            |
+            X  (İletişim Yok / Zor)
+            |
+      [ DEC Network ]  <----->  (Sadece DEC Bilgisayarlar)
+            |
+            X  (İletişim Yok / Zor)
+            |
+[ Other Vendor Network ] <--->  (Diğer Marka Bilgisayarlar)
+
+```
+
+Gördüğün gibi, her marka kendi adasında yaşıyor.
+
+---
+
+### 2. Open Model Arayışı
+
+Bu karmaşayı çözmek için **Vendor-neutral** (Markadan bağımsız) bir modele ihtiyaç vardı. Rekabeti artırmak ve karmaşıklığı azaltmak gerekiyordu. İki büyük rakip sahneye çıktı:
+
+#### Aday 1: OSI Model 
+
+* **Yaratan:** **ISO** (International Organization for Standardization).
+* **Yaklaşım:** 1970'lerin sonunda başladılar. Hedefleri çok asil ve büyüktü: Dünyadaki tüm bilgisayarları konuşturmak.
+* **Katılımcılar:** Dünyanın teknolojik olarak gelişmiş birçok ülkesi. Çok resmi ve bürokratik bir süreç.
+
+#### Aday 2: TCP/IP 
+
+* **Yaratan:** **U.S. Department of Defense (DoD)** (ABD Savunma Bakanlığı) sözleşmesiyle filizlendi.
+* **Yaklaşım:** Daha az resmi. Üniversitelerdeki gönüllü araştırmacılar protokolleri geliştirdi.
+* **Katılımcılar:** Gönüllüler, akademisyenler.
+
+---
+
+### 3. Geçiş Dönemi - 1990s
+
+1990'larda şirketler ağlarına hem OSI, hem TCP/IP hem de eski özel modelleri eklemeye başladılar. Tam bir geçiş süreciydi.
+
+**[1990'lar - Karışık Ortam]**
+
+```text
+      [ Enterprise Network ]
+                 |
+    --------------------------
+    |            |           |
+ [IBM SNA]    [TCP/IP]    [OSI]  <---> (Aynı anda çalışan protokoller)
+    |            |           |
+(IBM PC)    (Unix PC)   (Diğer)
+
+```
+
+Ağlar hala karmaşık ama TCP/IP yavaş yavaş içeri sızıyor.
+
+---
+
+### 4. TCP/IP'nin Zaferi - 2000s ve Günümüz
+
+90'ların sonuna gelindiğinde kazanan belli oldu: **TCP/IP**.
+
+* **OSI Neden Kaybetti?** Geliştirme süreci çok yavaştı. Resmi standartlaştırma bürokrasisi yüzünden pazarın hızına yetişemedi.
+* **TCP/IP Neden Kazandı?** Gönüllüler tarafından geliştirilen bu model, pratikti, çalışıyordu ve hızla yayıldı.
+
+Bugün (21. Yüzyıl), özel modeller neredeyse tamamen terk edildi.
+
+**[Günümüz - Tek Dil]**
+
+```text
+         [ TCP/IP ]
+             |
+     (Universal Language)
+             |
+  -------------------------
+  |           |           |
+(PC)       (Tablet)    (Phone)
+
+```
+
+Artık marka ne olursa olsun, herkes TCP/IP konuşuyor.
+
+---
+
+### Önemli Bir Not: OSI Öldü mü? 
+
+Kitap burada çok kritik bir noktaya değiniyordu. "Hiç OSI protokollerini kullanan bir bilgisayarda çalışacak mısın?" **Muhtemelen hayır.**
+"Peki neden öğreniyoruz?" Çünkü **OSI Jargonu** (Terimleri) hâlâ kullanılıyor.
+
+---
