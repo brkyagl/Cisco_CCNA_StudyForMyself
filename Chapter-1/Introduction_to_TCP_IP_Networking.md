@@ -663,7 +663,7 @@ Hadi senaryoyu canlandıralım. Berkay, Irem'e web sayfasını 3 parça halinde 
 Böylece eksik parça tamamlanır ve uygulama (HTTP) hiçbir şey olmamış gibi web sayfasını bütün halinde gösterir.
 Bu örnekte verinin taşındığı kutuya **Segment** (Parça) adını verdiğimizi unutma. Transport katmanının veri birimi "Segment"tir.
 
-# Interactions (Etkileşim Türleri)
+### Interactions (Etkileşim Türleri)
 
 Ağ iletişiminde iki farklı türde "konuşma" vardır. Biri kendi bilgisayarının içinde gerçekleşir, diğeri ise karşıdaki bilgisayarla.
 
