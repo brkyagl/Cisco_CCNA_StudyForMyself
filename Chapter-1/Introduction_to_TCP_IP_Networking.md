@@ -7,7 +7,7 @@ Ama artık bu ağı inşa eden **Network Engineer** (Ağ Mühendisi) olma yolund
 Ağ dediğimiz şey, senin evde kullandığın internet bağlantısına çok benzer temeller üzerine kuruludur. 
 İki ana ev senaryosu ile başlayalım:
 
-## 1. Home Kullanıcısı Bakış Açısı
+## Home Kullanıcısı Bakış Açısı
 
 Evde yüksek hızlı internete bağlanırken genelde iki teknoloji karşımıza çıkar.
 
@@ -116,7 +116,7 @@ Home-PC> ping 192.168.1.1
 
 ---
 
-## 2. Enterprise vs. SOHO Networks
+## Enterprise vs. SOHO Networks
 
 Evdeki ağ ile koca bir şirketin ağı aslında "teknoloji" olarak birbirine çok benzer, sadece ölçekleri ve amaçları farklıdır. Burada iki kritik terim öğreniyoruz:
 
@@ -234,7 +234,7 @@ Artık sadece evdeki modemi resetleyen biri değilsin; PC, Switch ve Router hiye
 
 ---
 
-## 3. Cloud Kavramı (Ufak Bir Not)
+## Cloud Kavramı (Ufak Bir Not)
 
 Ağ şemalarında sürekli bir **Bulut** ikonu göreceksin. Bu ikonun çok net bir anlamı vardır:
 
@@ -247,7 +247,7 @@ Arada o paket hangi kamyona bindi, hangi depoda bekledi, hangi uçağa aktarıld
 
 ---
 
-## 4. Ağların Temel Görevi
+## Ağların Temel Görevi
 
 Bazı kullanıcılar ağın nasıl çalıştığını hiç umursamaz. 
 Sadece Instagram'a girmek, müzik dinlemek isterler. "Nasıl oluyor da bu mesaj gidiyor?" diye düşünmezler.
@@ -258,7 +258,7 @@ Bizim işimiz; bu taşıma işlemini yapan, güvenli kılan ve hızlandıran o "
 
 ---
 
-## 5. TCP/IP Networking Model (Oyunun Kuralları)
+## TCP/IP Networking Model (Oyunun Kuralları)
 
 Ağ dünyasına girdiğinde sürekli duyacağın bir terim var: **Networking Model** (bazen **Networking Architecture** veya **Networking Blueprint** de denir).
 
@@ -300,7 +300,7 @@ Cisco marka bir Router ile, Dell marka bir Laptop, aralarında Samsung marka bir
 
 ---
 
-# 6. TCP/IP'ye Giden Tarihçe
+## TCP/IP'ye Giden Tarihçe
 
 Bugün dünya genelinde bilgisayar ağları tek bir model kullanır: **TCP/IP**. Ancak dünya her zaman bu kadar basit değildi.
 "Bir zamanlar", TCP/IP dahil hiçbir ağ protokolü yoktu. **Vendors** (Üreticiler/Satıcılar) ilk ağ protokollerini kendileri yarattılar ve bu protokoller **sadece o markanın** bilgisayarlarını destekliyordu.
@@ -723,3 +723,209 @@ Bu tabloyu bir yere mutlaka yaz, sınavda kafan karışırsa hemen bu tabloyu ha
 | **Same-Layer Interaction** | Farklı Bilgisayarlar | İki bilgisayar, protokoller aracılığıyla birbiriyle konuşur. Ne yapmak istediklerini **Header** içine yazarak birbirlerine iletirler. (Örn: TCP SEQ numaraları). |
 | **Adjacent-Layer Interaction** | Tek Bilgisayar | Bir alt katman, bir üst katmana **hizmet** sunar. Yazılım veya donanım, bir altındaki katmandan işini yapmasını ister. (Örn: HTTP'nin TCP'den hata düzeltme istemesi). |
 
+---
+
+## TCP/IP Network Layer
+
+Hatırlarsan **Application Layer**'da yüzlerce protokol vardı. **Transport Layer**'da ise TCP ve UDP başroldeydi.
+Ama **Network Layer**'a geldiğimizde sahne tek bir dev isme kalıyor: **IP (Internet Protocol)**.
+Tüm modelin adı neden **TCP/IP** biliyor musun? Çünkü en çok iş yapan iki protokolün (Transport'taki **TCP** ve Network'teki **IP**) adını birleştirip araya bir taksim (/) koymuşlar.
+
+IP'nin iki temel süper gücü vardır:
+
+1. **Addressing:** Herkese benzersiz bir numara vermek.
+2. **Routing:** Veriyi en iyi yoldan hedefe götürmek.
+
+### IP vs. The Postal Service (Posta Servisi Analojisi)
+
+Bu katmanı anlamak için PTT veya Kargo mantığını düşünmen yeterli.
+
+#### 1. Kullanıcının Gözünden 
+
+Diyelim ki iki mektup yazdın:
+
+* Biri mahalledeki arkadaşına (Local).
+* Diğeri ülkenin öbür ucundaki arkadaşına (Remote).
+
+Zarfların üzerine adresleri yazdın, pulu yapıştırdın ve posta kutusuna attın.
+
+**Soru:** Senin için bu iki mektup arasında bir fark var mı?
+**Cevap:** Hayır. Sen sadece kutuya atarsın ve gitmesini beklersin. Arkada tır mı kullanıldı, uçak mı kalktı ilgilenmezsin.
+
+İşte **Application** ve **Transport** katmanları "Mektubu Gönderen Kişi" gibidir. Veriyi paketler, adresi yazar ve **Network Layer**'a teslim eder. Yolun detaylarıyla ilgilenmezler.
+
+#### 2. Postanenin Gözünden 
+
+Senin işin bitti ama Posta Servisinin (Network Layer) işi yeni başlıyor.
+
+* Şehir içindeki mektup için belki sadece küçük bir kamyonet yeterlidir.
+* Ülkenin ucundaki mektup için: Önce yerel şubeye, sonra ana dağıtım merkezine, oradan uçağa, oradan başka bir kamyona...
+
+Posta servisi her durakta mektuba bakar ve bir karar verir: **"Bunu şimdi nereye göndermeliyim?"**
+
+**[Posta Hizmeti Yönlendirme (Routing) Süreci]**
+
+```text
+    (Gönderen)                                               (Alıcı)
+       |                                                        ^
+       | [Mektup]                                               |
+       v                                                        |
+  [ Posta Kutusu ]                                       [ Posta Kutusu ]
+       |                                                        ^
+       v                                                        |
+ [Yerel Postane] --> [Sıralama Merkezi] --> [Tır] -->   [Uzak Posta Ofisi]
+       |         (Karar: Sıralama Merkezine Gönder)            ^
+       |                                                       |
+       |                                                       |
+  (Routing Kararı)                                       (Son Teslimat)
+
+```
+
+Bu zincirdeki her bir durak, ağ dünyasındaki **Router**'dır. Ve bu yönlendirme işlemine **Routing** denir.
+
+### Ağ İçin Anlamı
+
+Bu hikayeyi teknik terimlere dökersek:
+
+1. **Addressing = IP Address:** Posta servisi evleri ayırmak için nasıl açık adres (Cadde, Sokak, No) kullanıyorsa; **IP** de her bilgisayara benzersiz bir **IP Address** verir.
+2. **Routing = Forwarding Packets:** Postaneler (Routerlar), gelen paketlere bakar ve "Bu adrese gitmesi için bir sonraki durak neresi?" diye karar verir.
+3. **Altyapı:** Posta servisi mektupları taşımak için nasıl kamyonlar, uçaklar ve şubeler kurduysa; **Network Layer** da veriyi taşımak için kablolar, routerlar ve switchlerden oluşan bir altyapı tanımlar.
+
+> **Özetle:**
+* **Üst Katmanlar (App/Transport):** "Al bunu şuraya gönder, nasıl gittiği umrumda değil." der.
+* **Alt Katman (Network/IP):** "Tamam, ben haritaya bakıp en iyi yolu bulacağım ve adım adım götüreceğim." der.
+
+### IP Adreslemenin Temelleri
+
+IP (Internet Protocol), adresleri tanımlarken iki ana kurala dayanır. Bu kurallar kaos çıkmaması için hayati önem taşır:
+
+1. **Benzersizlik:** Ağa bağlanan her cihaz (buna **TCP/IP Host** diyoruz) benzersiz bir adrese sahip olmalıdır. Tıpkı kimlik numaran gibi, kimsede aynısı olamaz.
+2. **Gruplama:** Adresler rastgele dağıtılmaz, belirli kurallara göre gruplanır.
+
+Posta sistemindeki **ZIP Code** (Posta Kodu) mantığı gibidir. "34 ile başlayanlar İstanbul, 06 ile başlayanlar Ankara" gibi. IP adresleri de sayılarına göre gruplanır.
+
+### Dotted-Decimal Notation (Noktalı Ondalık Gösterim)
+
+IP adreslerinin yazım şekline havalı bir isim veriyoruz: **Dotted-Decimal Notation (DDN)**.
+
+* **Kural:** Dört adet sayı vardır.
+* **Ayıraç:** Bu sayılar birbirlerinden **nokta** ile ayrılır.
+* **Örnek:** `1.1.1.1` veya `192.168.1.1`
+
+### Mahalle Mantığı
+
+Hadi şimdi canlandıralım. Burada 3 farklı "Mahalle" (Grup) ve bunları birbirine bağlayan "Muhtarlar" (Routerlar) var.
+
+**[IP Grupları ile Basit TCP/IP Ağı]**
+
+```text
+         [ Grup 1: “1”ler ]                    [ Grup 2: “2”ler ]
+      (Addresses: 1.__.__.__)                (Addresses: 2.__.__.__)
+             |                                      |
+         (Berkay)                                 (Irem)
+        IP: 1.1.1.1                              IP: 2.2.2.2
+             |                                      |
+             |                                      |
+           [R1] ---------------------------------- [R2]
+             \                                    /
+              \                                  /
+               \___________ [R3] _______________/
+                             |
+                          (Üçüncü Şahıs)
+                          IP: 3.3.3.3
+                             |
+                      [ Grup 3: “3”ler ]
+                      (Addresses: 3.__.__.__)
+
+```
+
+Bu şemada adreslerin başındaki ilk numaraya göre bir gruplama yapıldığını görüyoruz:
+
+* **Sol Taraf (Berkay'ın Mahallesi):** Burada tüm adresler **1** ile başlar (`1.__.__.__`). Berkay'ın adresi `1.1.1.1` olduğu için buradadır.
+* **Sağ Taraf (Irem'in Mahallesi):** Burada tüm adresler **2** ile başlar (`2.__.__.__`). Irem `2.2.2.2` adresini kullanır.
+* **Alt Taraf (Üçüncü Şahıs'ın Mahallesi):** Burada tüm adresler **3** ile başlar (`3.__.__.__`).
+
+### Routerların Rolü
+
+Şemada gördüğün **R1**, **R2** ve **R3**; **Router**'ları temsil eder.
+
+* **Tanım:** Routerlar, TCP/IP ağının parçalarını birbirine bağlayan cihazlardır.
+* **Görevi (Routing/Forwarding):** Posta ofisi ne yapıyorsa onu yaparlar.
+
+1. Paketi fiziksel bir **Interface**'den alırlar.
+2. Paketin üzerindeki **IP Adresine** bakarlar.
+3. Karar verirler: "Hımm, bu paket 2 ile başlıyor, o zaman R2'ye göndermeliyim."
+4. Paketi doğru yola **Forward** ederler.
+
+Routerlar trafiği yönlendiren polislerdir, IP adresleri de paketlerin üzerindeki "Gideceği Yer" etiketleridir.
+Gruplama sayesinde Router'lar her tekil evi ezberlemek zorunda kalmaz, sadece "2 ile başlayanlar sağ tarafta" diye bilmeleri yeterlidir.
+
+**Bunu GSN3 ile pratik yaparım! şimdilik şema olsun**
+
+### IP Routing Temelleri
+
+TCP/IP ağ katmanının (Network Layer) temel görevi basittir: **IP Packet**'lerini bir cihazdan diğerine taşımak yani forwarding yapmak.
+Ağa bağlanan ve bir IP adresi olan her cihaza (boyutu veya gücü ne olursa olsun; süper bilgisayar, telefon veya akıllı buzdolabı) **IP Host** denir.
+
+### Paketin İçeriği
+
+Berkay, Irem'e web sayfasının bir parçasını gönderirken, veri paketini katman katman sarar. Artık sadece HTTP ve TCP başlıkları yok, en dışta bir **IP Header** var.
+
+Bu IP Başlığında iki kritik bilgi yazar:
+
+1. **Source IP Address:** Gönderen kim? (Berkay: `1.1.1.1`)
+2. **Destination IP Address:** Alıcı kim? (Irem: `2.2.2.2`)
+
+###  Adım Adım Yolculuk
+
+Hadi Berkay'ın oluşturduğu bu paketin, Routerlar üzerinden zıplayarak Irem'e gidiş hikayesini izleyelim.
+
+**[IP Routing Mantığı - Berkay'dan Irem'e]**
+
+```text
+    Adım 1 (Gönderen)        Adım 2 (Route)           Adım 3 (Alıcı)
+   ----------------         ----------------         ------------------
+        Berkay                    R1                       R2             Irem
+      (1.1.1.1)                (Router)                 (Router)       (2.2.2.2)
+         |                        |                        |              ^
+         |   [IP Packet]          |      [IP Packet]       |              |
+         | [Src:1.1.1.1]          |    [Dst: 2.2.2.2]      |              |
+         | [Dst:2.2.2.2]          |                        |              |
+         +----------------------> | ---------------------> | -----------+ |
+                                  |                        |              |
+                          (Karar: "2'ye ...")      (Karar: "Local")       |
+                          "R2'ye Gönder"           "Doğrudan Gönder"
+
+```
+
+#### Adım 1: Larry Yola Çıkarıyor
+
+Berkay paketi hazırladı. Hedef adres `2.2.2.2`.
+
+* **Berkay'ın Mantığı:** Berkay, Irem'in tam olarak nerede olduğunu, hangi kablodan gidileceğini bilmez. Tek bildiği şey şudur: **"Bu paketi yakınımdaki Router'a (R1) atarsam, o gerisini halleder."**
+
+Burası mektubu sokağındaki posta kutusuna atmak gibidir. Mektup kutudan sonra hangi tıra binecek bilmezsin.
+
+#### Adım 2: R1 Karar Veriyor
+
+Paket **R1**'e gelir. R1 paketi açar ve sadece **Destination IP Address**'e (`2.2.2.2`) bakar.
+
+* **R1'in Mantığı:** R1 kendi hafızasındaki haritaya (Routing Table) bakar.
+* **Karar:** "Hımm, 2 ile başlayan adresler şu tarafta, R2 yönünde." der ve paketi **R2**'ye fırlatır.
+
+#### Adım 3: R2 Teslim Ediyor
+
+Paket **R2**'ye gelir. R2 de hedef adrese (`2.2.2.2`) bakar.
+
+* **R2'nin Mantığı:** R2 haritasına bakar ve görür ki `2.2.2.2` (Irem), direkt olarak kendisine bağlı.
+* **Karar:** "Bu adres benim yerel ağımda." der ve paketi direkt Irem'in bilgisayarına teslim eder.
+
+### CCNA İçin Neden Önemli?
+
+Bu "Routing" işlemi, CCNA'in kalbidir. Sınavın yarısından fazlası şu üç soruya odaklanacak:
+
+1. **Addressing:** IP adreslerini nasıl planlarız?
+2. **IP Routing:** Paketler yollarını nasıl bulur?
+3. **Routers:** Routerlar bu kararları nasıl verir?
+
+Bu temel mantığı (Adrese bak -> Tabloyu kontrol et -> Yönlendir) asla unutma. Tüm internet bu basit döngü üzerine kurulu.
