@@ -718,7 +718,7 @@ Bu tabloyu bir yere mutlaka yaz, sınavda kafan karışırsa hemen bu tabloyu ha
 
 **[Etkileşimler Özeti]**
 
-| Concept (Kavram) | Context (Bağlam) | Description (Açıklama) |
+| Kavram | Bağlam | Açıklama |
 | --- | --- | --- |
 | **Same-Layer Interaction** | Farklı Bilgisayarlar | İki bilgisayar, protokoller aracılığıyla birbiriyle konuşur. Ne yapmak istediklerini **Header** içine yazarak birbirlerine iletirler. (Örn: TCP SEQ numaraları). |
 | **Adjacent-Layer Interaction** | Tek Bilgisayar | Bir alt katman, bir üst katmana **hizmet** sunar. Yazılım veya donanım, bir altındaki katmandan işini yapmasını ister. (Örn: HTTP'nin TCP'den hata düzeltme istemesi). |
