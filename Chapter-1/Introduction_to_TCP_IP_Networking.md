@@ -860,7 +860,7 @@ Bu şemada adreslerin başındaki ilk numaraya göre bir gruplama yapıldığın
 Routerlar trafiği yönlendiren polislerdir, IP adresleri de paketlerin üzerindeki "Gideceği Yer" etiketleridir.
 Gruplama sayesinde Router'lar her tekil evi ezberlemek zorunda kalmaz, sadece "2 ile başlayanlar sağ tarafta" diye bilmeleri yeterlidir.
 
-**Bunu GSN3 ile pratik yaparım! şimdilik şema olsun**
+**Bunu GSN3 ile pratik yaparım! şimdilik şema olsun.**
 
 ### IP Routing Temelleri
 
@@ -919,6 +919,8 @@ Paket **R2**'ye gelir. R2 de hedef adrese (`2.2.2.2`) bakar.
 
 * **R2'nin Mantığı:** R2 haritasına bakar ve görür ki `2.2.2.2` (Irem), direkt olarak kendisine bağlı.
 * **Karar:** "Bu adres benim yerel ağımda." der ve paketi direkt Irem'in bilgisayarına teslim eder.
+
+**Bunu GSN3 ile pratik yaparım! şimdilik şema olsun.**
 
 ### CCNA İçin Neden Önemli?
 
