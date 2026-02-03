@@ -663,4 +663,63 @@ Hadi senaryoyu canlandıralım. Berkay, Irem'e web sayfasını 3 parça halinde 
 Böylece eksik parça tamamlanır ve uygulama (HTTP) hiçbir şey olmamış gibi web sayfasını bütün halinde gösterir.
 Bu örnekte verinin taşındığı kutuya **Segment** (Parça) adını verdiğimizi unutma. Transport katmanının veri birimi "Segment"tir.
 
----
+# Interactions (Etkileşim Türleri)
+
+Ağ iletişiminde iki farklı türde "konuşma" vardır. Biri kendi bilgisayarının içinde gerçekleşir, diğeri ise karşıdaki bilgisayarla.
+
+### Komşu Katman Etkileşimi (Adjacent-Layer)
+
+Bu etkileşim, **tek bir bilgisayar üzerinde** gerçekleşir.
+
+* **Yönü:** Dikey. Yukarıdan aşağıya veya aşağıdan yukarıya.
+* **Mantığı:** Bir üst katman, işini yaptırmak için bir alt katmandan **hizmet ister**. Alt katman da bu hizmeti **sağlar**.
+
+> **Örnek (Patron ve Asistan):**
+* **HTTP (Patron - Üst Katman):** "Ben bu veriyi göndermek istiyorum ama hatayla, kayıpla uğraşamam." der.
+* **TCP (Asistan - Alt Katman):** "Sen merak etme patron, paket kaybolursa tekrar isteme işi (Error Recovery) bende." der.
+  
+Yani HTTP, hatasız iletim istiyordu, bu yüzden bir altındaki komşusu olan TCP'yi kullandı.
+
+### Aynı Katman Etkileşimi (Same-Layer)
+
+Bu etkileşim, **farklı bilgisayarlar arasında** gerçekleşir.
+
+* **Yönü:** Yatay.
+* **Mantığı:** Bir bilgisayardaki katman, karşı bilgisayardaki **kendi dengiyle** konuşur.
+* **Aracı:** Bunu yapmak için **Headers** kullanılır.
+
+> **Örnek (Diplomatik Mektup):**
+Berkay'ın TCP'si bir mektup yazar (Header) ve içine "Seq No: 1" yazar. Bu notu Irem'in HTTP'si okumaz, Irem'in IP'si okumaz. Bu notu sadece ve sadece mektubun muhatabı olan **Irem'in TCP'si** okur ve anlar.
+
+Daha iyi anlamak için bu iki kavramın tek karede özeti. Oklar kimin kiminle konuştuğunu gösteriyor:
+
+**[Etkileşim Türleri]**
+
+```text
+    Computer A (Berkay)                                     Computer B (Irem)
+   --------------------                                   ------------------
+      [Application]                                          [Application]
+           |  (Adjacent - Dikey)                                  ^
+           v                                                      |
+      [ Transport ]  ------------------------------------->  [ Transport ]
+           |            (Same-Layer - Yatay)                      ^
+           |            (TCP Header aracılığıyla)                 |
+           v                                                      |
+      [ Network ]                                             [ Network ]
+
+```
+
+* **Dikey Oklar:** Komşu katman etkileşimi (Hizmet alıp verme).
+* **Yatay Ok:** Aynı katman etkileşimi (Header ile haberleşme).
+
+### Özet Tablosu
+
+Bu tabloyu bir yere mutlaka yaz, sınavda kafan karışırsa hemen bu tabloyu hatırla.
+
+**[Etkileşimler Özeti]**
+
+| Concept (Kavram) | Context (Bağlam) | Description (Açıklama) |
+| --- | --- | --- |
+| **Same-Layer Interaction** | Farklı Bilgisayarlar | İki bilgisayar, protokoller aracılığıyla birbiriyle konuşur. Ne yapmak istediklerini **Header** içine yazarak birbirlerine iletirler. (Örn: TCP SEQ numaraları). |
+| **Adjacent-Layer Interaction** | Tek Bilgisayar | Bir alt katman, bir üst katmana **hizmet** sunar. Yazılım veya donanım, bir altındaki katmandan işini yapmasını ister. (Örn: HTTP'nin TCP'den hata düzeltme istemesi). |
+
