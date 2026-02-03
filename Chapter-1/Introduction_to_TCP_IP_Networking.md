@@ -600,3 +600,67 @@ Berkay dosyanın geri kalanını gönderirken **artık Header koymaz.**
 **Neden?** Çünkü zaten anlaştılar, başlık ekleyip boşuna yer kaplamaya gerek yok. Sadece saf veriyi gönderir.
 
 ---
+
+## TCP/IP Transport Layer (Taşıma Katmanı)
+
+Uygulama katmanında (Application Layer) yüzlerce protokol (HTTP, SMTP, POP3 vs.) varken, bir alt katman olan **Transport Layer**'da işler daha sadedir. Burada genellikle iki ana protokol borusu öter:
+
+1. **TCP (Transmission Control Protocol)**
+2. **UDP (User Datagram Protocol)**
+
+### Servis Mantığı
+
+Ağ modellerinde altın kural şudur: **Her katman, bir üstündeki katmana hizmet eder.**
+
+* **Transport Layer**, bir üstündeki **Application Layer**'a hizmet sunar.
+* **Nasıl?** Örneğin HTTP (Application), veriyi gönderir ve arkasına yaslanır. "Bu veri karşıya ulaştı mı, yolda kayboldu mu?" diye dert etmez. Çünkü bu derdi onun yerine **TCP** (Transport) üstlenir. TCP'nin sunduğu en büyük hizmetlerden biri **Error Recovery** (Hata Kurtarma) özelliğidir.
+
+### TCP Hata Kurtarma Temelleri
+
+Irem ve Berkay örneğine geri dönelim. Irem, Berkay'dan `home.html` sayfasını istemişti. Ama ağ dünyası tekin bir yer değildir. Kablolar kopabilir, routerlar yoğunluktan paket atabilir.
+
+* **Senaryo:** Irem isteği gönderdi ama yolda kayboldu.
+* **Sonuç:** TCP olmasaydı, Irem sonsuza kadar boş ekrana bakardı. Sayfa yüklenmezdi.
+
+İşte bu yüzden TCP, verinin karşıya ulaştığını **garanti etmek** zorundadır. Bunu yapmak için **Acknowledgments (ACK)** ve **Sequence Numbers (SEQ)** dediğimiz bir mekanizma kullanır.
+
+### Sıralama ve Kurtarma
+
+TCP, gönderdiği her veri parçasına (buna **Segment** diyoruz) bir sıra numarası (**Sequence Number - SEQ**) verir. Tıpkı kargoları "Koli 1, Koli 2, Koli 3" diye etiketlemek gibi.
+
+Hadi senaryoyu canlandıralım. Berkay, Irem'e web sayfasını 3 parça halinde gönderiyor ama 2. parça yolda kayboluyor.
+
+**[TCP Hata Kurtarma İşlemi]**
+
+```text
+      Web Server (Berkay)                           Web Browser (Irem)
+      ------------------                           -----------------
+             |                                            |
+      (1) [TCP Header: SEQ = 1] + [Data]                  |
+             | -----------------------------------------> | (Irem: Aldım!)
+             |                                            |
+      (2) [TCP Header: SEQ = 2] + [Data]                  |
+             | --------X (KAYBOLDU!)                      | (Irem: ...?)
+             |      (Network Başarısızlığı)               |
+             |                                            |
+      (3) [TCP Header: SEQ = 3] + [Data]                  |
+             | -----------------------------------------> | (Irem: Hop dedik! 2. paket kayıp!)
+             |                                            |
+             |     (Irem'in Mantığı Devreye Giriyor)      |
+             | <----------------------------------------- |
+             |    [TCP Segment: Send 2 Next]              |
+
+```
+
+### Adım Adım Olay Örgüsü
+
+1. **SEQ = 1:** Berkay ilk parçayı yollar. Irem bunu alır. Her şey yolunda.
+2. **SEQ = 2:** Berkay ikinci parçayı yollar. Ancak ağda bir sorun olur ve bu paket **kaybolur (Lost)**. Irem'in haberi bile yok.
+3. **SEQ = 3:** Berkay üçüncü parçayı yollar. Irem bunu alır.
+4. **Error Detection:** İşte zeka burada devreye girer. Irem elindeki kutulara bakar: "Elimde 1 var, 3 var... Ee 2 nerede?" Irem, aradaki parçanın gelmediğini anlar.
+5. **Recovery (Kurtarma):** Irem'ın TCP mantığı hemen Berkay'a bir mesaj döner: **"Hey Berkay! 1 ve 3 geldi ama 2 yok. Bana 2'yi tekrar gönder (Send 2 Next)."**
+
+Böylece eksik parça tamamlanır ve uygulama (HTTP) hiçbir şey olmamış gibi web sayfasını bütün halinde gösterir.
+Bu örnekte verinin taşındığı kutuya **Segment** (Parça) adını verdiğimizi unutma. Transport katmanının veri birimi "Segment"tir.
+
+---
