@@ -563,7 +563,7 @@ Hadi Irem ve Berkay arasındaki trafiği bu sefer teknik göz üzerinden inceley
       Web Browser (Irem)                           Web Server (Berkay)
       -----------------                           ------------------
              |                                            |
-             |  (1) [HTTP Header: GET home.html]           |
+             |  (1) [HTTP Header: GET home.html]          |
              | -----------------------------------------> |
              |                                            |
              |  (2) [HTTP Header: OK (200)] + [Data...]   |
