@@ -898,7 +898,7 @@ Hadi Berkay'ın oluşturduğu bu paketin, Routerlar üzerinden zıplayarak Irem'
 
 ```
 
-#### Adım 1: Larry Yola Çıkarıyor
+#### Adım 1: Berkay Yola Çıkarıyor
 
 Berkay paketi hazırladı. Hedef adres `2.2.2.2`.
 
