@@ -492,3 +492,53 @@ Not: Tabloda "Internet" olarak geçen katman, 5 katmanlı modelde "Network" katm
 
 ---
 
+# TCP/IP Application Layer (Uygulama Katmanı)
+
+Burası TCP/IP modelinin en tepesidir ve biz kullanıcılara en yakın olan katmandır.
+
+### 1. Görevi Nedir? 
+
+Burada çok önemli bir ayrım var, sakın karıştırma:
+
+* **Application Layer**, bilgisayarında çalışan uygulamanın **kendisi değildir** (Yani Chrome, Firefox veya Outlook programının kendisi değildir - Internet olmadan bi' HTML dosyası aç bakalım ne oluyor?).
+* **Görevi:** Bu uygulamaların ağa erişmek için ihtiyaç duyduğu **servisleri** tanımlamaktır.
+
+Kısacası, Uygulama Katmanı, senin bilgisayarındaki yazılım ile ağın geri kalanı arasında bir **interface** sağlar.
+Garsonu düşün. Garson yemeğin kendisi değildir, aşçı da değildir. Garson, senin (Uygulama) mutfakla (Network) iletişim kurmanı sağlayan aracıdır. "Bana su getir" dediğinde o isteği anlayan ve ileten protokoldür.
+
+### 2. HTTP Overview (Bir Web Sayfası Nasıl Açılır?)
+
+Bugün dünyanın en popüler TCP/IP uygulaması tartışmasız **Web Browser** (Tarayıcı)'dır. Hatta birçok yazılım firması artık programlarını tarayıcı üzerinden çalışacak şekilde değiştiriyor.
+Peki sen tarayıcıya "[www.google.com](https://www.google.com)" yazıp Enter'a bastığında, o sayfa sihirli bir şekilde nasıl önüne geliyor? Burada **HTTP** (Hypertext Transfer Protocol) devreye giriyor.
+
+Bunu bi' senaryoyla gösterelim, **Irem** (Kullanıcı) ve **Berkay** (Sunucu) üzerinden canlandıralım.
+
+**[Bir Web Sayfasını Almak İçin Temel Uygulama Mantığı]**
+
+```text
+      Web Browser (Irem)                           Web Server (Berkay)
+      -----------------                           ------------------
+             |                                            |
+             |      (1) Bana web sayfanızı verin          |
+             | -----------------------------------------> |
+             |                                            |
+             |      (2) İşte home.html dosyası            |
+             | <----------------------------------------- |
+             |                                            |
+      [Sayfa Görüntüler]                                [Dosyaları Yollar]
+
+```
+
+### 3. Perde Arkasında Ne Oldu? 
+
+Yukarıdaki şemada basit gibi görünen işlem aslında şöyle gerçekleşir:
+
+1. **İstek (Request):** Irem tarayıcısını açar. Tarayıcı, Berkay'ın web sunucusundan varsayılan sayfayı isteyecek şekilde ayarlanmıştır. Irem, Berkay'a "Bana ana sayfanı gönder" mesajını yollar.
+2. **İşleme (Processing):** Berkay'ın sunucu yazılımı bu isteği alır. Kendi ayarlarında varsayılan sayfanın **`home.html`** adlı bir dosya olduğunu bilir ve diskinden bu dosyayı bulur.
+3. **Yanıt (Reply):** Berkay, bu `home.html` dosyasını paketleyip Irem'e geri gönderir.
+4. **Görüntüleme:** Irem dosyayı alır ve tarayıcı penceresinde sana o güzel web sayfasını gösterir.
+
+İşte **Application Layer** (burada HTTP protokolü), Irem'in "Ver" demesiyle Berkay'ın "Al" demesi arasındaki o konuşma kurallarını belirleyen katmandır.
+
+---
+
