@@ -401,7 +401,94 @@ Artık marka ne olursa olsun, herkes TCP/IP konuşuyor.
 
 ### Önemli Bir Not: OSI Öldü mü? 
 
-Kitap burada çok kritik bir noktaya değiniyordu. "Hiç OSI protokollerini kullanan bir bilgisayarda çalışacak mısın?" **Muhtemelen hayır.**
+Burada çok kritik bir noktaya değiniyoruz. "Hiç OSI protokollerini kullanan bir bilgisayarda çalışacak mısın?" **Muhtemelen hayır.**
 "Peki neden öğreniyoruz?" Çünkü **OSI Jargonu** (Terimleri) hâlâ kullanılıyor.
 
 ---
+
+## TCP/IP'ye Genel Bakış
+
+TCP/IP modeli, bilgisayarların konuşmasını sağlayan devasa bir protokoller koleksiyonudur. Tek bir kural değil, kurallar bütünüdür.
+
+### 1. Belgeler ve Standartlar
+
+Bu kurallar nerede yazıyor?
+
+* **RFC (Requests For Comments):** TCP/IP, bir protokolü tanımlamak için RFC adı verilen belgeleri kullanır. (Bunları Google'da aratıp bulabilirsin, hepsi halka açıktır).
+* **Tekeri Yeniden İcat Etmeme:** TCP/IP modeli çok akıllıdır. Eğer başka bir kurum bir şeyi zaten standartlaştırdıysa, TCP/IP onu baştan yazmaz, sadece ona referans verir.
+* **Örnek:** **IEEE** (Institute of Electrical and Electronic Engineers) kurumu **Ethernet LAN** standartlarını zaten belirlemiştir. TCP/IP, RFC'lerinde Ethernet'i sıfırdan tanımlamaz, "Ethernet için IEEE standartlarına bakınız" der geçer.
+
+### 2. Kutudan Çıktığı Gibi Çalışma
+
+Yeni bir telefonu veya PC'yi kutudan çıkarırsın, kabloyu takarsın ve çalışır. Nasıl?
+
+* **OS (İşletim Sistemi):** Windows, Linux veya Android, yazılım tarafında TCP/IP modelinin parçalarını zaten içinde barındırır.
+* **Hardware (Donanım):** Bilgisayardaki **Ethernet Card** veya **Wireless LAN Card**, TCP/IP modelinin referans verdiği donanım standartlarına göre üretilmiştir.
+
+Kısacası, donanım ve yazılım üreticileri, ürünlerini bu modele göre ürettikleri için her şey tıkır tıkır çalışır.
+
+### TCP/IP Katmanları
+
+Bir ağ modelini anlamanın en iyi yolu, karmaşık işleri küçük parçalara bölmektir. Bu parçalara **Layer (Katman)** diyoruz.
+Her katmanın kendi görev alanı vardır. Aşağıda gösterilen modern **5 Katmanlı TCP/IP Modelini** görüyoruz.
+
+**[TCP/IP Networking Model]**
+
+```text
+       -----------------------
+       |     Application     |  <--- (En Üst: Uygulamalar ve Kullanıcı)
+       -----------------------
+       |      Transport      |  <--- (Taşıma: Veri güvenliği ve akışı)
+       -----------------------
+       |       Network       |  <--- (Ağ: Adresleme ve Rota çizme)
+       -----------------------
+       |      Data Link      |  <--- (Veri Bağlantısı: Özel bağlantı kuralları)
+       -----------------------
+       |      Physical       |  <--- (Fiziksel: Kablolar ve Bit'ler)
+       -----------------------
+```
+
+### Katmanların Görev Dağılımı
+
+1. **Physical Layer:** Bit'lerin (0 ve 1) fiziksel kablo veya hava üzerinden nasıl iletileceğine odaklanır.
+2. **Data-Link Layer:** Veriyi belirli bir fiziksel bağlantı tipi üzerinden göndermeye odaklanır.
+* *Örnek:* **Ethernet LAN** için kurallar farklıdır, **Wireless LAN** için farklıdır.
+3. **Network Layer:** Veriyi, gönderen bilgisayardan alıp, dünyanın öbür ucundaki alıcı bilgisayara kadar **tüm yol boyunca** teslim etmeye odaklanır.
+4. **Transport & Application Layers:** Veriyi göndermek ve almak isteyen uygulamalara (Web tarayıcısı, E-posta vb.) odaklanır.
+
+> **ÖNEMLİ NOT (RFC 1122):**
+
+Eski kaynaklarda veya RFC 1122'de "4 Katmanlı" bir TCP/IP modeli görebilirsin.
+Ancak, **Real Networking** (Gerçek hayat) ve **CCNA Sınavı** için yukarıdaki **5 Katmanlı Model** esas alınır.
+
+### Örnek Protokoller
+
+Aşağıdaki tabloda, hangi protokolün hangi katmanda çalıştığını görebilirsin. 
+Bu tabloyu adın gibi bileceksin, çünkü eğitimlerin geri kalanı bu tabloyu detaylandırmakla geçecek.
+
+**[TCP/IP Architecture]**
+
+```text
++-----------------------+----------------------------------+
+| TCP/IP Layer          | Örnek Protocols                  |
++-----------------------+----------------------------------+
+| Application           | HTTP, POP3, SMTP                 |
++-----------------------+----------------------------------+
+| Transport             | TCP, UDP                         |
++-----------------------+----------------------------------+
+| Internet (Network)    | IP, ICMP                         |
++-----------------------+----------------------------------+
+| Data Link & Physical  | Ethernet, 802.11 (Wi-Fi)         |
++-----------------------+----------------------------------+
+
+```
+
+Not: Tabloda "Internet" olarak geçen katman, 5 katmanlı modelde "Network" katmanına karşılık gelir. İkisi de kullanılır.
+
+* **Application:** Web siteleri (HTTP), E-posta (SMTP, POP3).
+* **Transport:** Veri taşıma yöntemleri (TCP, UDP).
+* **Internet/Network:** Adresleme (IP).
+* **Link & Physical:** Kablolu (Ethernet) ve Kablosuz (Wi-Fi) bağlantılar.
+
+---
+
