@@ -1020,3 +1020,99 @@ Bu işlem sayesinde Berkay ve R1, aradaki kablo ve Ethernet teknolojisini kullan
 
 ---
 
+## Data Encapsulation (Veri Kapsülleme Nedir?)
+
+Ağ iletişiminde altın kural şudur: **Her katman, bir üstten aldığı veriye kendi imzasını (Header) ekler.**
+
+* **Encapsulation (Kapsülleme):** Verinin etrafına Headers ve bazen Trailers ekleme işlemidir.
+* **Amaç:** Veriyi, ağdaki yolculuğu boyunca korumak ve yönlendirmek.
+
+### 5 Adımlı Süreç
+
+Bir bilgisayarın veri göndermesi, yukarıdan aşağıya doğru gerçekleşen 5 adımlı bir paketleme zinciridir.
+
+**[5 Adımda Data Encapsulation]**
+
+```text
+Layer                  Eylem ve Temsili ASCII Art
+--------------------   ----------------------------------------------------
+                       (1) Uygulama Verileri Oluşturulur
+1. Application Layer      [ DATA ]
+                          |
+                          v
+                       (2) Transport Layer Header Ekler (TCP/UDP)
+2. Transport Layer        [ TCP | DATA ]
+                          |
+                          v
+                       (3) Network Layer Header Ekler (IP Address)
+3. Network Layer          [ IP | TCP | DATA ]
+                          |
+                          v
+                       (4) Data Link Layer Header ve Trailer Ekler (MAC)
+4. Data Link Layer        [ Eth Header | IP | TCP | DATA | Eth Trailer ]
+                          |
+                          v
+                       (5) Physical Layer Bitlere Dönüştürür
+5. Physical Layer         10110100101101... (Elektrik Sinyalleri) ->
+
+```
+
+### Adım Adım Neler Oluyor?
+
+1. **Adım 1 (Application):** Uygulama veriyi oluşturur. (Örn: Web sayfası içeriği). Bazen uygulama da kendi HTTP Header'ını ekler.
+2. **Adım 2 (Transport):** Veri bir alt kata iner. TCP veya UDP, verinin başına kendi Header'ını yapıştırır. Artık paketimiz "TCP + Data" olmuştur.
+3. **Adım 3 (Network):** Paket bir alt kata daha iner. IP, source ve destination adreslerini içeren Header'ını en başa ekler.
+4. **Adım 4 (Data Link):** Burası özeldir. Ethernet gibi protokoller veriyi korumak için hem **başa (Header)** hem de **sona (Trailer)** ekleme yapar. Paket artık tam bir "Ethernet Frame" olmuştur.
+5. **Adım 5 (Physical):** Artık etiketleme biter. Bu uzun paket, kablodan geçebilecek sinyallere (**Bits**) dönüştürülür ve yola çıkar.
+
+Dikkat ettiysen sadece **Data Link Layer** (Layer 2) hem Header hem Trailer ekler. Diğer katmanlar sadece Header ekler. Bu fark CCNA sınavlarında sıkça sorulur.
+
+## TCP/IP Mesajlarının Adları
+
+Az önce Encapsulation sürecini öğrendik. Şimdi bu sürecin her adımında oluşan o pakete verdiğimiz **özel isimleri** öğreneceğiz. 
+Teknik dilde bunlara **PDU (Protocol Data Unit)** denir ama biz daha yaygın isimlerini kullanacağız.
+
+Ağ uzmanları konuşurken "Şu veriyi yolla" demezler. Hangi katmandan bahsettiklerine göre şu üç terimi kullanırlar:
+
+1. **Segment:** Transport Layer (Taşıma Katmanı - TCP) mesajı.
+2. **Packet:** Network Layer (Ağ Katmanı - IP) mesajı.
+3. **Frame:** Data-Link Layer (Veri Bağlantı Katmanı - Ethernet) mesajı.
+
+Burada göreceğin şey şu: Her katman için "Data" kavramı değişiyor.
+
+**[Segment, Packet, ve Frame]**
+
+```text
+   Katman & İsim                Yapı
+   ------------------------    -----------------------------------------
+   Transport Layer
+   (İsim: SEGMENT)             [ TCP Header |       Data        ]
+
+
+   Network Layer
+   (İsim: PACKET)              [ IP Header  |       Data        ]
+                                            (TCP + Uygulama Verilerini içerir)
+
+   Data-Link Layer
+   (İsim: FRAME)               [ LH ]       |       Data        | [ LT ]
+                               (Link Header)(IP+TCP+Uygulama içerir) (Link Trailer)
+
+```
+
+Bu arada şemadaki **LH** (Link Header) ve **LT** (Link Trailer), Ethernet gibi protokollerin header ve trailer'ını temsil eder.
+
+### "Veri"ye Bakış Açısı
+
+Burada kafanı karıştırabilecek ama çok önemli bir detay var: **"Data" kime göre nedir?**
+
+* **TCP İçin:** Data = Kullanıcının web sayfası içeriğidir.
+* **IP İçin:** Data = TCP Başlığı + Web Sayfası içeriğidir.
+* **Ethernet İçin:** Data = IP Başlığı + TCP Başlığı + Web Sayfası içeriğidir.
+
+Şunun gibi bir şey: kargo uçağı (Link Layer) taşıdığı konteynerin (Packet) içinde ne olduğuyla ilgilenmez. 
+İçinde mektup mu var, koli mi var (Segment), yoksa başka bir şey mi var bakmaz. Onun için hepsi "Taşınacak Yük"tür (**Data**).
+* **Network Layer (IP)** paketi hazırlarken, arkasına taktığı TCP başlığını "TCP Başlığı" olarak görmez, onu sadece taşıması gereken **Data** olarak görür.
+Her katman sadece kendi eklediği Header'a bakar, gerisini "Data" olarak kabul eder ve bir alt kata paslar.
+
+---
+
