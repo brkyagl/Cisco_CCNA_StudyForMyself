@@ -860,7 +860,7 @@ Bu şemada adreslerin başındaki ilk numaraya göre bir gruplama yapıldığın
 Routerlar trafiği yönlendiren polislerdir, IP adresleri de paketlerin üzerindeki "Gideceği Yer" etiketleridir.
 Gruplama sayesinde Router'lar her tekil evi ezberlemek zorunda kalmaz, sadece "2 ile başlayanlar sağ tarafta" diye bilmeleri yeterlidir.
 
-**Bunu GSN3 ile pratik yaparım! şimdilik şema olsun.**
+![image](CCNA_3.png)
 
 ### IP Routing Temelleri
 
@@ -924,7 +924,7 @@ Paket **R2**'ye gelir. R2 de hedef adrese (`2.2.2.2`) bakar.
 
 ## IP Routing Lab (Berkay'dan İrem'e Yolculuk)
 
-**Hedef:** Teoriyi senaryoyu canlandırmak. Berkay (1.1.1.1) ve İrem (2.2.2.2) farklı mahallelerde oturuyor. Aradaki R1 ve R2 router'larına yolu öğreterek bunları konuşturacağız.
+**Hedef:** Teoriyi senaryoya canlandırmak. Berkay (1.1.1.1) ve İrem (2.2.2.2) farklı mahallelerde oturuyor. Aradaki R1 ve R2 router'larına yolu öğreterek bunları konuşturacağız.
 
 ### Adım 1: Topolojiyi Kur 
 
