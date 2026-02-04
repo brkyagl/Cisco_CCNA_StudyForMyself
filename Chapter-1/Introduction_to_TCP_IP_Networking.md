@@ -931,3 +931,92 @@ Bu "Routing" işlemi, CCNA'in kalbidir. Sınavın yarısından fazlası şu üç
 3. **Routers:** Routerlar bu kararları nasıl verir?
 
 Bu temel mantığı (Adrese bak -> Tabloyu kontrol et -> Yönlendir) asla unutma. Tüm internet bu basit döngü üzerine kurulu.
+
+---
+
+## TCP/IP Data-Link ve Physical Layers
+
+IP (Network Layer) paketi adresten adrese götürmeye odaklanır demiştik. Ama IP, fiziksel kablolarla uğraşmaz. "Bu veriyi kablodan nasıl geçiririm?" sorusunun cevabı en alt iki katmandadır.
+
+### Ayrılmaz İkili
+
+1. **Physical Layer (Fiziksel Katman):**
+* Tamamen donanım ve fizik.
+* **Görevi:** Kabloları ve kabloların içinden geçen enerjiyi (elektrik sinyalleri, ışık vb.) tanımlar.
+
+2. **Data-Link Layer (Veri Bağlantı Katmanı):**
+* Kurallar bütünüdür.
+* **Görevi:** O kablo üzerinden veriyi göndermek için gereken kuralları ve düzeni sağlar.
+* **Hizmet:** Bir üstündeki **Network Layer**'a (IP) hizmet eder.
+
+IP, Berkay'dan R1'e gitmeye karar verir. Ama IP paketi kendi başına kablodan geçemez. Data-Link katmanı devreye girer, IP paketini alır, sarıp sarmalar ve fiziksel yola hazırlar.
+
+### Encapsulation & De-encapsulation (Paketleme ve Açma)
+
+Berkay, Router R1'e bir paket göndermek istiyor. Arada bir **Ethernet LAN** var. Bakalım IP paketi nasıl kılık değiştiriyor.
+
+**[Berkay Ethernet Kullanarak IP Paketini R1'e İletme]**
+
+```text
+      Berkay (Gönderici)                                  Router R1 (Alıcı)
+      ----------------                                   ----------------------
+             |                                                     |
+             |   [ IP Packet ]                                     |
+             |         |                                           |
+    Adım 1   |         v  (Encapsulate)                            |
+             |  [Eth Header][ IP Packet ][Eth Trailer]             |
+             |   (Bu bir Ethernet Frame'i)                         |
+             |         |                                           |
+    Adım 2   |         v  (Bit olarak ilet)                        |
+             |    ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ >  | Adım 3 (Al)
+             |      (Kablo Üzerinden Elektrik Sinyalleri)          |
+             |                                                     |
+             |                                            (De-encapsulate)            ^
+             |                                          [Eth Header][ IP Packet ][Eth Trailer]
+             |                                                     |                 Adım 4
+             |                                            (Çıkar: Header & Trailer)   ^
+             |                                                     |
+             |                                                [ IP Packet ]
+
+```
+
+### 4 Adımlı Süreç
+
+Bu süreç, ağ iletişiminin temel taşıdır. Adım adım ne olduğuna bakalım:
+
+#### Adım 1: Encapsulation (Kapsülleme - Berkay)
+
+Berkay'ın IP paketi hazır. Ethernet kartı bu paketi alır ve bir **Zarfın** içine koyar.
+
+* **Header:** Paketin önüne eklenir (**Ethernet Header**).
+* **Trailer (Kuyruk):** Paketin arkasına eklenir (**Ethernet Trailer**).
+* **Sonuç:** Ortaya çıkan bu yeni yapıya **Ethernet Frame** denir.
+
+Protokoller genelde Header kullanır ama Data-Link katmanında (Ethernet gibi) hem başa **Header** hem de sona **Trailer** eklenir. Tıpkı bir sandviç gibi veriyi araya alırlar.
+
+#### Adım 2: İletim - Berkay
+
+Berkay, oluşturduğu bu Frame'i alır ve **bit**'lere (0 ve 1) dönüştürür.
+Sonra bu bitleri kablo üzerinden akacak **elektrik sinyallerine** çevirip fiziksel olarak gönderir.
+
+#### Adım 3: Alma - Router R1
+
+R1, kablodan gelen elektrik sinyallerini algılar.
+Bu sinyalleri tekrar yorumlayarak orijinal **bit**'lere ve dolayısıyla **Ethernet Frame** haline dönüştürür.
+
+#### Adım 4: De-encapsulation (Zarfı Açma - Router R1)
+
+R1'in asıl ilgilendiği şey zarf değil, içindeki mektuptur (IP Paketi).
+
+* R1, **Ethernet Header** ve **Ethernet Trailer**'ı söküp atar.
+* Geriye tertemiz **IP Packet** kalır.
+
+Özetle: Kim Ne Yapar?
+
+* **Data-Link Layer:** IP paketini alır, bir **Frame** içine hapseder (Encapsulation).
+* **Physical Layer:** O Frame'i alır, elektriğe/sinyale çevirip karşıya atar.
+
+Bu işlem sayesinde Berkay ve R1, aradaki kablo ve Ethernet teknolojisini kullanarak paketi bir duraktan diğerine başarıyla taşımış olur.
+
+---
+
