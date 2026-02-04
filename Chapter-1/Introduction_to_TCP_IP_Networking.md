@@ -1116,3 +1116,131 @@ Her katman sadece kendi eklediği Header'a bakar, gerisini "Data" olarak kabul e
 
 ---
 
+## OSI Ağ Modeli ve Terminolojisi
+
+Bir zamanlar (özellikle 80'lerin sonu, 90'ların başı), herkes geleceğin **OSI Modeli** olacağını sanıyordu. 
+Eğer o senaryo gerçekleşseydi, bugün bilgisayarlarımızda TCP/IP değil, OSI protokolleri çalışıyor olacaktı.
+Ama ne oldu? **OSI bu savaşı kaybetti.** Bugün dünyadaki hiçbir modern bilgisayar, iletişim kurmak için OSI modelini (protokol seti olarak) kullanmaz.
+
+### Peki Neden Öğreniyoruz?
+
+"Madem kullanılmıyor, neden öğreniyoruz?" bunu daha önce not olarak belirtmiştim. Cevap tek kelime: **Terminoloji.**
+O eski günlerde, herkes OSI kazanacak sandığı için tüm üreticiler (Cisco, HP, IBM) dokümanlarını ve terimlerini OSI modeline göre yazdılar. 
+Bu alışkanlık o kadar yerleşti ki, OSI protokolleri ölse bile **dili** hayatta kaldı.
+Tıpkı **Latince** gibi düşün. Bugün sokakta kimse Latince konuşmaz (Ölü bir dil). Ama bir doktora gittiğinde sana Latince kelimeler/hastalıklar söyler. Tıp dünyası anlaşmak için hala Latince terimleri kullanır.
+Ağ dünyasında da durum aynıdır. Biz **TCP/IP** kullanırız ama birbirimizle anlaşırken **OSI terimlerini** (Layer 1, Layer 7 vb.) kullanırız.
+
+* OSI bir protokol olarak **ÖLDÜ**. 
+* OSI bir referans modeli ve ortak dil olarak **YAŞIYOR**.
+
+### OSI ve TCP/IP'nin karşılaştırılması
+
+Temel mantık olarak OSI ve TCP/IP birbirine çok benzer.
+
+1. İkisinin de katmanları vardır.
+2. İkisi de belirli standartlara referans verir (Örneğin **IEEE Ethernet** standartları ikisi için de ortaktır, Amerika'yı yeniden keşfetmezler :D).
+
+Ancak katmanların sayısı ve isimlendirilmesinde farklılıklar vardır. Bugün OSI modelini, diğer modelleri kıyaslamak için bir **referans cetveli** olarak kullanıyoruz.
+
+Aşağıda sol tarafta 7 katmanlı OSI, sağ tarafta ise bugün kullandığımız modern 5 katmanlı TCP/IP var.
+
+**[OSI vs. TCP/IP]**
+
+```text
+      OSI Model (7 Layers)                  TCP/IP Model (5 Layers)
+    -------------------------             ---------------------------
+    7. Application  \
+    6. Presentation  >  (Birleşir) ---->   5. Application
+    5. Session      /
+    -------------------------             ---------------------------
+    4. Transport      ----------------->   4. Transport
+    -------------------------             ---------------------------
+    3. Network        ----------------->   3. Network
+    -------------------------             ---------------------------
+    2. Data Link      ----------------->   2. Data Link
+    -------------------------             ---------------------------
+    1. Physical       ----------------->   1. Physical
+
+```
+
+1. **Alt 4 Katman:**
+* Dikkat ettiysen, alt katmanlar (1, 2, 3 ve 4) her iki modelde de **isim, numara ve işlev** olarak birebir aynıdır.
+* Physical, Data Link, Network, Transport. Burada kafa karışıklığı yok.
+
+2. **Üst Katmanlar:**
+* Fark tepede başlıyor. OSI bu kısmı çok detaylandırıp **Session**, **Presentation** ve **Application** diye 3'e böler.
+* TCP/IP ise daha pratik davranır: "Bunların hepsi uygulamayla ilgili işler" der ve tek bir **Application** katmanında toplar.
+
+### Neden Katman 7 Diyoruz?
+
+İşte burası sahadaki mühendislik jargonu için kritik nokta.
+Dünya TCP/IP kullanıyor dedik. TCP/IP modelinde (sağdaki) en üst katman **5. Katmandır**.
+Ama bir ağ uzmanına gidip "HTTP bir Layer 5 protokolüdür" dersen sana garip garip bakar.
+
+**Kural:** Biz protokolleri numaralandırırken hala **OSI numaralarını** kullanırız.
+
+* **HTTP:** TCP/IP'de en tepededir ama biz ona **"Layer 7 Protokolü"** deriz.
+* **Router:** Network katmanındadır, **"Layer 3 Cihazı"** deriz.
+* **Switch:** Data Link katmanındadır, **"Layer 2 Cihazı"** deriz.
+
+TCP/IP'de Application katmanı, OSI'nin 5, 6 ve 7. katmanlarının (Session, Presentation, App) yaptığı tüm işleri kapsar. Ama biz konuşurken alışkanlıktan dolayı hep **"Layer 7"** terimini kullanırız.
+
+## OSI Data Encapsulation Terminoloji (PDU Nedir?)
+
+Hatırlarsan TCP/IP dünyasında mesajlara katmanına göre özel isimler veriyorduk:
+
+* Layer 4: **Segment**
+* Layer 3: **Packet**
+* Layer 2: **Frame**
+
+OSI modeli ise bu özel isimlerle uğraşmaz. Hepsine tek bir genel isim verir:
+**Protocol Data Unit (PDU)** - (Protokol Veri Birimi).
+
+OSI'nin isimlendirme mantığı çok basittir: **Layer X PDU (LxPDU)**.
+Buradaki "x", katmanın numarasını temsil eder.
+
+* **Layer 7 verisi:** L7PDU
+* **Layer 4 verisi:** L4PDU
+* **Layer 3 verisi:** L3PDU
+
+TCP/IP'de "IP Packet" dediğimiz şeye, OSI dilinde **L3PDU** (Layer 3 PDU) deriz. Çünkü IP bir 3. Katman protokolüdür.
+
+Veri en tepeden (L7) başlar ve aşağı indikçe her katman kendi başlığını (**H - Header**) ekler. En altta (L2) ise hem header hem de trailer eklenir.
+
+**[OSI Encapsulation ve PDUs]**
+
+```text
+  Katman         İşlem & Yapı                                          İsim
+  -----         ---------------------------------------------------    -------
+  Layer 7       [ L7H | Data ]                                      =  L7PDU
+                   |
+                   v
+  Layer 6       [ L6H | L7PDU ]                                     =  L6PDU
+                   |
+                   v
+  Layer 5       [ L5H | L6PDU ]                                     =  L5PDU
+                   |
+                   v
+  Layer 4       [ L4H | L5PDU ]                                     =  L4PDU
+                   |
+                   v
+  Layer 3       [ L3H | L4PDU ]                                     =  L3PDU
+                   |
+                   v
+  Layer 2       [ L2H | L3PDU | L2T ]                               =  L2PDU
+
+```
+
+* **L#H:** Layer # Header (Katman Başlığı)
+* **L#T:** Layer # Trailer (Katman Kuyruğu - Sadece Layer 2'de var!)
+
+Sınavda kafan karışmasın diye şu tabloyu bir yere ekle:
+
+| Layer Numarası | TCP/IP Name (Özel İsim) | OSI Name (Genel İsim) |
+| --- | --- | --- |
+| **Layer 4** | Segment | L4PDU |
+| **Layer 3** | Packet | L3PDU |
+| **Layer 2** | Frame | L2PDU |
+| **Layer 1** | Bit | L1PDU |
+
+---
