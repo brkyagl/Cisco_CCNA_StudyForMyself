@@ -920,7 +920,133 @@ Paket **R2**'ye gelir. R2 de hedef adrese (`2.2.2.2`) bakar.
 * **R2'nin Mantığı:** R2 haritasına bakar ve görür ki `2.2.2.2` (Irem), direkt olarak kendisine bağlı.
 * **Karar:** "Bu adres benim yerel ağımda." der ve paketi direkt Irem'in bilgisayarına teslim eder.
 
-**Bunu GSN3 ile pratik yaparım! şimdilik şema olsun.**
+---
+
+## IP Routing Lab (Berkay'dan İrem'e Yolculuk)
+
+**Hedef:** Teoriyi senaryoyu canlandırmak. Berkay (1.1.1.1) ve İrem (2.2.2.2) farklı mahallelerde oturuyor. Aradaki R1 ve R2 router'larına yolu öğreterek bunları konuşturacağız.
+
+### Adım 1: Topolojiyi Kur 
+
+GNS3'te şu düzeni kuruyoruz:
+
+**[Topology Diagram]**
+
+```text
+    [Berkay-PC] -------- [R1] ---------------- [R2] -------- [Irem-PC]
+   (1.1.1.1)        (1.1.1.254)            (2.2.2.254)      (2.2.2.2)
+                    (WAN: 12.0.0.1)      (WAN: 12.0.0.2)
+
+```
+
+1. **Cihazlar:**
+* 2 adet **VPCS** (Biri `Berkay`, biri `Irem` olsun).
+* 2 adet **Cisco Router** (Biri `R1`, biri `R2`).
+
+2. **Kablolama:**
+* `Berkay` -> `R1` (FastEthernet0/0)
+* `R1` (FastEthernet0/1) -> `R2` (FastEthernet0/1) *[Burası Routerlar arası yol]*
+* `R2` (FastEthernet0/0) -> `Irem`
+
+### Adım 2: IP Adreslerini Ver 
+
+Burada küçük bir teknik dokunuş yapacağız. Routerlar arası bağlantı için **12.0.0.0** bloğunu kullanacağız (R1 ve R2'nin birleşimi gibi düşün).
+
+### A. Bilgisayarlar 
+
+Berkay ve İrem'e kimliklerini ve **Gateway** adreslerini verelim.
+
+```bash
+# Berkay PC Konsolu:
+# IP: 1.1.1.1, Gateway: 1.1.1.254 (R1'in bacağı)
+ip 1.1.1.1 255.255.255.0 1.1.1.254
+
+# Irem PC Konsolu:
+# IP: 2.2.2.2, Gateway: 2.2.2.254 (R2'nin bacağı)
+ip 2.2.2.2 255.255.255.0 2.2.2.254
+
+```
+
+### B. Router R1 Ayarları (Berkay'ın Tarafı)
+
+```bash
+# R1 Konsolu:
+enable
+conf t
+
+# 1. Bacak: Berkay'a bakan taraf (Local)
+interface FastEthernet0/0
+ ip address 1.1.1.254 255.255.255.0
+ no shutdown
+
+# 2. Bacak: R2'ye giden taraf (WAN)
+interface FastEthernet0/1
+ ip address 12.0.0.1 255.255.255.0
+ no shutdown
+exit
+
+```
+
+### C. Router R2 Ayarları (İrem'in Tarafı)
+
+```bash
+# R2 Konsolu:
+enable
+conf t
+
+# 1. Bacak: İrem'e bakan taraf (Local)
+interface FastEthernet0/0
+ ip address 2.2.2.254 255.255.255.0
+ no shutdown
+
+# 2. Bacak: R1'e giden taraf (WAN)
+interface FastEthernet0/1
+ ip address 12.0.0.2 255.255.255.0
+ no shutdown
+exit
+
+```
+
+### Adım 3: Routing
+
+**Burası labın en kritik kısmı!**
+
+Şu an R1, sadece kendine bağlı olanları (1.0.0.0 ve 12.0.0.0) tanır. İrem'in mahallesi olan **2.0.0.0** hakkında hiçbir fikri yoktur. R1'e paketi nereye atacağını öğretmemiz lazım.
+Yani Postaneye gidip "2 ile başlayan mektupları şu kamyona (R2) yükle" talimatını asıyoruz.
+
+```bash
+# R1 Konsolu (R1'e İrem'in yolunu öğretiyoruz):
+# Komut: ip route [Hedef_Ağ] [Maske] [Sıradaki_Durak_IP]
+ip route 2.0.0.0 255.0.0.0 12.0.0.2
+
+# R2 Konsolu (R2'ye de Berkay'ın yolunu öğretmeliyiz ki cevap dönebilsin):
+ip route 1.0.0.0 255.0.0.0 12.0.0.1
+
+```
+
+### Adım 4: Trace
+
+Her şey hazır. İrem'in (PC) Berkay'a bir paket yollayalım.
+
+**1. Trace Testi (İz Sürme):**
+
+Paketin hangi routerlardan geçtiğini görmek için şu komutu yaz:
+
+```bash
+Irem-PC> trace 1.1.1.1
+trace to 1.1.1.1, 8 hops max, press Ctrl+C to stop
+ 1   2.2.2.254   39.458 ms  9.065 ms  9.554 ms
+ 2   12.0.0.1   30.243 ms  19.478 ms  19.425 ms
+ 3   *1.1.1.1   29.526 ms (ICMP type:3, code:3, Destination port unreachable)
+```
+
+**Beklenen Çıktı:**
+
+1. `1.1.1.254` (Önce R1'e gitti)
+2. `12.0.0.2`  (R1 onu R2'ye fırlattı)
+3. `2.2.2.2`   (R2 onu İrem'e teslim etti)
+
+---
 
 ### CCNA İçin Neden Önemli?
 
