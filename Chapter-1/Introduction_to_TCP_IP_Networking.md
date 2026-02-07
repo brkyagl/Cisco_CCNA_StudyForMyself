@@ -28,7 +28,7 @@ Bu senaryo telefon hattı altyapısını kullanır.
 * **Cihaz:** Burada merkezde bir **Router** vardır.
 * **Teknoloji:** Router, internet ile konuşmak için **DSL** teknolojisini kullanır.
 
-![image](https://github.com/brkyagl/Cisco_CCNA_StudyForMyself/blob/d28b1f6df4f1ed7c0cae66cbc1b7ff731281257d/Chapter-1/CCNA-1.png)
+![image](https://github.com/brkyagl/Cisco_CCNA_StudyForMyself/raw/main/Chapter-1/CCNA-1.png)
 
 Burası için basit bir "Home Network" topolojisi kuracağız. Bir tarafta PC (Ethernet ile bağlı), diğer tarafta Tablet (Wi-Fi ile bağlı) ve bunları internete çıkaran bir Router simüle edeceğiz.
 
@@ -132,8 +132,7 @@ Bir **Enterprise Network** kullanıcısı olsan bile, deneyimin evdekine çok be
 
 Fiziksel olarak yaptığın eylem aynıdır, ama arka planda (duvarın arkasında) dönen işler Enterprise ağlarda çok daha karmaşıktır.
 
-![image](https://github.com/brkyagl/Cisco_CCNA_StudyForMyself/blob/9c63d34b84188039957646f0f451fdffef835d31/Chapter-1/CCNA-2.png)
-
+![image](https://github.com/brkyagl/Cisco_CCNA_StudyForMyself/raw/main/Chapter-1/CCNA-2.png)
 Burası için "Enterprise" simülasyonu yapacağız. Evdeki basit modem yerine, profesyonel **Switch** ve **Router**'lar koyarak kurumsal bir yapının minyatürünü çizeceğiz.
 Zaten Home Network hallettik, modemimizi kurduk. Şimdi seviye atlıyoruz. Artık tek bir oda değil, koca bir ofis binasını yöneten mühendis kafasına geçiyoruz. Burası **Enterprise Network** dünyası.
 
@@ -860,8 +859,7 @@ Bu şemada adreslerin başındaki ilk numaraya göre bir gruplama yapıldığın
 Routerlar trafiği yönlendiren polislerdir, IP adresleri de paketlerin üzerindeki "Gideceği Yer" etiketleridir.
 Gruplama sayesinde Router'lar her tekil evi ezberlemek zorunda kalmaz, sadece "2 ile başlayanlar sağ tarafta" diye bilmeleri yeterlidir.
 
-![image](https://github.com/brkyagl/Cisco_CCNA_StudyForMyself/blob/9c63d34b84188039957646f0f451fdffef835d31/Chapter-1/CCNA_3.png)
-
+![image](https://github.com/brkyagl/Cisco_CCNA_StudyForMyself/raw/main/Chapter-1/CCNA_3.png)
 ### IP Routing Temelleri
 
 TCP/IP ağ katmanının (Network Layer) temel görevi basittir: **IP Packet**'lerini bir cihazdan diğerine taşımak yani forwarding yapmak.
