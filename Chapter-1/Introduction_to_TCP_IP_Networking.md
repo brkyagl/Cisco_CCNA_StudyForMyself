@@ -28,7 +28,7 @@ Bu senaryo telefon hattı altyapısını kullanır.
 * **Cihaz:** Burada merkezde bir **Router** vardır.
 * **Teknoloji:** Router, internet ile konuşmak için **DSL** teknolojisini kullanır.
 
-![image](CCNA-1.png)
+![image](https://github.com/brkyagl/Cisco_CCNA_StudyForMyself/blob/d28b1f6df4f1ed7c0cae66cbc1b7ff731281257d/Chapter-1/CCNA-1.png)
 
 Burası için basit bir "Home Network" topolojisi kuracağız. Bir tarafta PC (Ethernet ile bağlı), diğer tarafta Tablet (Wi-Fi ile bağlı) ve bunları internete çıkaran bir Router simüle edeceğiz.
 
