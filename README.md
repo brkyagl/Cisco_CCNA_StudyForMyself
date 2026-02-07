@@ -10,6 +10,8 @@ Bu repository, Wendell Odom'un **Official Cert Guide** müfredatına sadık kala
 
 ### 🔹 Bölüm 1: Ağ Teknolojilerine Giriş (Introduction to Networking)
 - [ ] [**Bölüm 1:** TCP/IP Networking Kavramlarına Giriş](./Chapter-1/Introduction_to_TCP_IP_Networking.md)
+  >  [**PDF :** TCP/IP Networking Kavramlarına Giriş](./Chapter-1/Introduction_to_TCP_IP_Networking.pdf) 
+  >
 - [ ] **Bölüm 2:** Ethernet LAN Temelleri
 - [ ] **Bölüm 3:** WAN Temelleri ve IP Routing Kavramları
 
