@@ -860,6 +860,7 @@ Routerlar trafiği yönlendiren polislerdir, IP adresleri de paketlerin üzerind
 Gruplama sayesinde Router'lar her tekil evi ezberlemek zorunda kalmaz, sadece "2 ile başlayanlar sağ tarafta" diye bilmeleri yeterlidir.
 
 ![image](https://github.com/brkyagl/Cisco_CCNA_StudyForMyself/raw/main/Chapter-1/CCNA_3.png)
+
 ### IP Routing Temelleri
 
 TCP/IP ağ katmanının (Network Layer) temel görevi basittir: **IP Packet**'lerini bir cihazdan diğerine taşımak yani forwarding yapmak.
