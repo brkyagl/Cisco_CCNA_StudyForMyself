@@ -2,7 +2,7 @@
 
 > **Status:** 🟢 Configuring... (Loading running-config)
 
-Bu repository, Wendell Odom'un **Official Cert Guide** müfredatına sadık kalarak hazırladığım teknik ders notlarını ve PDF kitapçıklarını içerecek. Kendim bu müfredatı öğrendikçe buraya da ekleyeceğim.
+Bu repository, Wendell Odom'un **Official Cert Guide** müfredatına sadık kalarak hazırladığım teknik ders notlarını ve PDF kitapçıklarını içerecek. Kendim bu müfredatı öğrendikçe buraya da ekleyeceğim. Burası birinci kısım!
 
 ---
 
