@@ -405,7 +405,7 @@ Bir Ethernet Bağlantısından'dan bahsettiğimizde, iki Ethernet Node arasında
               |                                            |
           (Bağlantı)                                    (Bağlantı)
               |                                            |
-      [RJ-45 Konektör]                             [RJ-45 Konektör]
+      [RJ-45 Konnektör]                            [RJ-45 Konnektör]
               \                                            /
                \__________________________________________/
                             (UTP Kablosu)
@@ -414,8 +414,8 @@ Bir Ethernet Bağlantısından'dan bahsettiğimizde, iki Ethernet Node arasında
 ```
 
 * **Kablo:** Bakır telleri taşıyan ana gövde.
-* **Konektör:** Kablonun ucundaki plastik ve metal parça.
-* **Port:** Cihazın üzerindeki, konektörün "tık" diye oturduğu yuva.
+* **Konnektör:** Kablonun ucundaki plastik ve metal parça.
+* **Port:** Cihazın üzerindeki, konnektörün "tık" diye oturduğu yuva.
 
 ### 2. Kablo ve Renkler
 
