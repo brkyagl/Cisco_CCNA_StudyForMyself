@@ -7,7 +7,7 @@ Bu aile, dünyanın en popüler **kablolu LAN teknolojisini** oluşturur.
 
 Ethernet, TCP/IP veya OSI modelinin en alt iki katmanını tanımlar ve yönetir:
 
-1. **Physical Layer:** Kablolar, konektörler, elektrik sinyalleri.
+1. **Physical Layer:** Kablolar, konnektörler, elektrik sinyalleri.
 2. **Data-Link Layer:** Protokol kuralları, frameler.
 
 ### IEEE (Patron Kim?)
@@ -17,7 +17,7 @@ Ethernet standartlarını belirleyen kurum **IEEE**'dir (Institute of Electrical
 Bu adamlar şunlara karar verir:
 
 * Kullanılacak **kablolama** tipi ne olacak?
-* Kablonun ucundaki **konektörler** nasıl olacak?
+* Kablonun ucundaki **konnektörler** nasıl olacak?
 * Cihazların uyması gereken **protokol kuralları** nelerdir?
 
 **[Modelde Ethernet'in Yeri]**
@@ -29,7 +29,7 @@ Bu adamlar şunlara karar verir:
    ------------------
    2. Data Link       <-------  [ Protocol Kuralları & Frames ]
    ------------------           (IEEE tarafından tanımlanmıştır)
-   1. Physical        <-------  [ Kablolama & Konektörler ]
+   1. Physical        <-------  [ Kablolama & Konnektörler ]
 
 ```
 
@@ -383,5 +383,126 @@ Peki neden bu zahmete giriyoruz? Cevap: **Fizik Kuralları.**
 2. **Crosstalk (Çapraz Konuşma):** Aynı kablonun içindeki bir çift telin yarattığı o elektromanyetik gürültü, hemen yanındaki diğer çifti bozmasına "Crosstalk" denir.
 
 Telleri birbirine bükmek, oluşan bu manyetik alanların birbirini **nötrlemesini** sağlar. Ne kadar sıkı bükülürse, sinyal o kadar temiz olur.
+
+---
+
+## UTP Ethernet Bağlantısını Çözme (Bağlantının Anatomisi)
+
+Bir Ethernet Bağlantısından'dan bahsettiğimizde, iki Ethernet Node arasındaki fiziksel yolu kastediyoruz. Bu yolun çalışması için üç bileşenin kusursuz eşleşmesi gerekir.
+
+### 1. Bileşenler
+
+ Aşağıdaki yapıyı görelim. Bu, verinin bir uçtan diğer uca gitmesini sağlayan fiziksel zincirdir.
+
+**[Figure 2-6: Basic Components of an Ethernet Link]**
+
+```text
+       Node A (PC/Switch)                         Node B (Router/PC)
+      -------------------                        --------------------
+      |                 |                        |                  |
+      |   [RJ-45 Port]  |<-- (Eşleştirme) -->    |   [RJ-45 Port]   |
+      |_______|_________|                        |_________|________|
+              |                                            |
+          (Bağlantı)                                    (Bağlantı)
+              |                                            |
+      [RJ-45 Konektör]                             [RJ-45 Konektör]
+              \                                            /
+               \__________________________________________/
+                            (UTP Kablosu)
+                     (Copper Wires Inside)
+
+```
+
+* **Kablo:** Bakır telleri taşıyan ana gövde.
+* **Konektör:** Kablonun ucundaki plastik ve metal parça.
+* **Port:** Cihazın üzerindeki, konektörün "tık" diye oturduğu yuva.
+
+### 2. Kablo ve Renkler
+
+Kablonun dışındaki plastik kılıfı soyarsan içinde birbirine bükülmüş bakır teller görürsün.
+
+* **Twisted Pairs (Bükümlü Çiftler):** Teller ikili gruplar halindedir.
+* **Renk Kodları:** Her çiftin bir rengi vardır (Mavi, Turuncu, Yeşil, Kahverengi).
+* Bir tel tamamen renklidir (Örn: **Mavi**).
+* Eşi ise o rengin çizgili halidir (Örn: **Mavi-Beyaz Çizgili**).
+
+Kablonun içinde toplam **4 Çift (8 Tel)** vardır. Ancak hız standartlarına göre kullanım değişir:
+* **10BASE-T & 100BASE-T:** Sadece **2 Çift** (4 Tel) kullanır.
+* **1000BASE-T (Gigabit):** **4 Çiftin tamamını** (8 Tel) kullanır.
+ 
+### 3. O Meşhur Uç RJ-45 Konnektör
+
+Ethernet kablolarının ucunda gördüğün o şeffaf parçanın teknik adı **RJ-45** konnektörüdür.
+
+* **Pinler:** Konnektörün ucunda **8 adet** metal diş (pin) bulunur.
+* **Görevi:** Kablonun içindeki 8 adet bakır tel, bu 8 adet pine kadar gelir ve sıkıştırılır. Sen konnektörü Porta taktığında, bu pinler cihazın içindeki elektronik devrelere temas eder ve **elektrik akışı** başlar.
+
+Yakınında bir Ethernet kablosu varsa ucuna (şeffaf kısma) dikkatlice bak. İçindeki renkli telleri ve uçtaki altın sarısı 8 adet metal pini göreceksin. İşte tüm internet o minik pinlerin birbirine değmesiyle çalışıyor.
+
+## Portlar ve Modüller
+
+Bağlantıyı tamamlamak için kablonun iki ucundaki RJ-45 konnektörlerinin gireceği yuvalara ihtiyacımız var.
+
+### 1. RJ-45 Portları & NICs (Sabit Portlar)
+
+Bilgisayarların ve Switch'lerin üzerindeki o standart internet girişlerine **RJ-45 Port** denir.
+
+* **NIC (Network Interface Card):** Bilgisayarların ağa bağlanmasını sağlayan karttır. Laptoplarda anakarta gömülüdür, masaüstü PC'lerde harici kart olarak takılabilir.
+* **Switch Ports:** Switch'lerin olayı budur; üzerinde onlarca RJ-45 portu bulunur ki birçok cihazı aynı anda bağlayabilsin.
+
+**[RJ-45 Konnektör ve Portlar]**
+
+```text
+          (Konnektör)                 (NIC Kartı)
+          [||||||||]               [  Devre Kartı    ]
+           |      |                [  ___________    ]
+        RJ-45 Kafası               [ |RJ-45 Port |   ]
+                                   [ |___________|   ]
+
+             (LAN Switch Yüzü)
+        _________________________________
+       | [Port] [Port] [Port] [Port] ... |
+       | [Port] [Port] [Port] [Port] ... |
+       |_________________________________|
+
+```
+
+### 2. Değiştirilebilir Modüller
+
+Cisco Switch alırken her zaman "sabit" portlarla sınırlı kalmak zorunda değilsin. Uzmanlara esneklik sağlamak için **Swappable Transceivers (Tak-Çıkar Modüller)** icat edilmiştir.
+Diyelim ki bir Switch aldın. Bugün bakır kablo kullanıyorsun ama yarın fiber kullanman gerekti. Switch'i çöpe mi atacaksın? Hayır! Sadece ucundaki modülü değiştirirsin.
+
+**[SFP+ Modülü ve Switch Yuvası]**
+
+```text
+      (Cisco Switch SFP+ Slot)
+      _______________________
+     |   [ Slot 1 (Boş) ]    |  <--- Modül buraya girer
+     |_______________________|
+
+             ^
+             | (Ekle)
+             |
+      [ SFP+ Modülü ]  <--- Gümüş renkli metal parça
+      [_____________]
+             |
+             | (Kablo buraya bağlanmıştır)
+             |
+```
+
+### Kısaltmalar Sözlüğü
+
+Sınavda bu kısaltmaların farkını sorarlar. Bilmemiz gereken 3 temel modül tipi var:
+
+| Kısaltma | Full İsim | Açıklama |
+| --- | --- | --- |
+| **GBIC** | Gigabit Interface Converter | **Eski nesil.** Çok büyüktür, yer kaplar. Gigabit hızındadır. Artık pek kullanılmaz. |
+| **SFP** | Small Form Pluggable | **Yeni nesil.** GBIC'in yerini almıştır. Çok daha küçüktür (Mini-GBIC de denir). Gigabit hızındadır. |
+| **SFP+** | Small Form Pluggable **Plus** | **Hızlı nesil.** Boyutu SFP ile aynıdır ama **10 Gbps** hızındadır. "Plus" kelimesi hız artışını (1G -> 10G) temsil eder. |
+
+Sahada SFP ve SFP+ fiziksel olarak birbirine çok benzer (aynı boyuttadır). Üzerindeki etiketi okumadan hangisinin 1G, hangisinin 10G olduğunu anlamak zordur. Yanlış yuvaya takarsan çalışmayabilir, dikkat!
+**RJ-45** bizim standart ev tipi girişimiz, **SFP/SFP+** ise kurumsal dünyadaki o havalı, tak-çıkar fiber yuvalarımız. 
+
+(Bu arada bu kabloları, konnektörleri vs. mutlaka webten resimlerine bakın.)
 
 ---
