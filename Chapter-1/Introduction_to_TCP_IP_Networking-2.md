@@ -307,3 +307,81 @@ Ethernet LAN; kullanıcı cihazlarının, Switch'lerin ve farklı kablo türleri
 * Ancak hepsi, **Ethernet Frame** adı verilen ortak bir dili konuşarak anlaşırlar.
 
 ---
+
+## UTP ile Fiziksel Ethernet LAN'lar Oluşturma (Kablolamanın Temelleri)
+
+Büyük resmi (Tüm ağı) görmeden önce, merceği iyice yakınlaştırıp iki Ethernet Node arasındaki tek bir bağlantıya odaklanacağız.
+Eğer iki cihaz fiziksel olarak birbirine "Selam" veremezse, Frame göndermenin de bir anlamı kalmaz.
+
+### Mahşerin Üç Atlısı
+
+Bu bölümde, piyasada en çok karşılaşacağın ve bilmen gereken üç temel UTP standardına odaklanacağız. Hepsi de veriyi **her iki yönde** gönderme mantığıyla çalışır ama kablolama detayları farklıdır.
+
+1. **10BASE-T (Ethernet):**
+* Dedemiz. 10 Mbps hızındadır. Artık pek görmeyiz ama temeli budur.
+
+2. **100BASE-T (Fast Ethernet - FE):**
+* Yaygındır. 100 Mbps hızındadır. "Fast" lakabı buradan gelir.
+
+3. **1000BASE-T (Gigabit Ethernet - GE):**
+* Bugünün standardı. 1000 Mbps (1 Gbps) hızındadır.
+
+### Kablolama Önemlidir
+
+Sadece "Kabloyu tak çalıştır" demeyeceğiz. Kablonun içindeki o renkli tellerin hangisinden veri gittiğini, hangisinden veri geldiğini inceleyeceğiz. 
+Özellikle 10 Mbps ile 1000 Mbps arasındaki kablolama farkı, bir networkçü için kritik detaydır.
+
+---
+
+## Twisted Pairs ile Veri İletimi
+
+Ethernet kablosunun (UTP) içinden aslında veri değil, **elektrik** akar. Peki bu elektriği nasıl anlamlı bir veriye dönüştürüyoruz?
+Bunu anlamak için süreci iki parçaya bölmemiz lazım:
+
+1. **Elektrik Devresi Oluşturmak:** Akımın akmasını sağlamak.
+2. **Sinyali Kodlamak:** O akımı 1 ve 0'lara çevirmek.
+
+### 1. Devre Kurmak
+
+Elektriğin temel kuralı şudur: Akımın akması için tamamlanmış bir döngüye ihtiyaç vardır. 
+Tek bir telden elektrik gönderip işin bitmesini bekleyemezsin, o elektriğin geri dönmesi veya devreyi tamamlaması gerekir.
+
+İşte bu yüzden Ethernet kablolarının içinde teller **Çiftler (Pairs)** halindedir. Ethernet kablosunun içindeki teller neden çifttir sorusuna güzel bi' cevap.
+
+**[Bir Çift Üzerinde Tek Bir Elektrik Devresi Oluşturma]**
+
+```text
+        Node 1 (Gönderici)                          Node 2 (Alıcı)
+      ----------------------                     -------------------
+      |                    |                     |                 |
+      |               (Tel 1 - Gidiş Yolu)       |                 |
+      |      ------------------------------------------>           |
+      |     |          (Elektrik Akımı)          |     |           |
+      | [Devre]                                  |  [Devre]        |
+      |     |          (Tel 2 - Dönüş Yolu)      |     |           |
+      |      <------------------------------------------           |
+      |                    |                     |                 |
+      ----------------------                     -------------------
+
+```
+
+Node 1 (Gönderici) ve Node 2 (Alıcı), bir çift teli kullanarak aralarında kapalı bir devre oluştururlar. Böylece elektrik bir telden gider, devre tamamlanır.
+
+### 2. 0 ve 1'in Dili
+
+Devreyi kurduk, elektrik akıyor. Peki bu akım nasıl "Merhaba Dünya" oluyor? Burada devreye **Encoding Scheme** girer.
+İki insanın aynı dili konuşması gibidir. Konuşan (Gönderici) belirli sesler çıkarır, Dinleyen (Alıcı) o seslerin ne anlama geldiğini bilir.
+Gönderici, elektrik sinyalini (voltajı) belirli bir ritimde değiştirir. Alıcı da bu değişimleri izler.
+* **Örnek (10BASE-T):** Voltaj aniden düşerse bu "0" demektir, yükselirse "1" demektir (Basitleştirilmiş anlatımı tabii). Alıcı bu voltaj değişimlerini algılar ve "Hah, burada 1 geldi, şimdi 0 geldi" diyerek veriyi çözer.
+
+### Neden Büküyoruz?
+
+Kabloların içindeki tellerin dümdüz durduğunu sanıyorsan yanılıyorsun. Adı üzerinde **Twisted Pair** (Bükümlü Çift). Renkli teller birbirine sarılarak tıpkı sarmaşık gibi ilerler.
+Peki neden bu zahmete giriyoruz? Cevap: **Fizik Kuralları.**
+
+1. **EMI (Electromagnetic Interference - Elektromanyetik Girişim):** Herhangi bir telden elektrik geçtiğinde, etrafında bir manyetik alan (gürültü diyebiliriz) oluşturur. Bu gürültü, yakınındaki diğer telleri bozar.
+2. **Crosstalk (Çapraz Konuşma):** Aynı kablonun içindeki bir çift telin yarattığı o elektromanyetik gürültü, hemen yanındaki diğer çifti bozmasına "Crosstalk" denir.
+
+Telleri birbirine bükmek, oluşan bu manyetik alanların birbirini **nötrlemesini** sağlar. Ne kadar sıkı bükülürse, sinyal o kadar temiz olur.
+
+---
