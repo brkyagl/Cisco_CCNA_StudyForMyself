@@ -109,3 +109,67 @@ Yani tek bir kasa içinde üç farklı görev yapan süper bir cihazdır. Networ
 
 ---
 
+## Enterprise Ağ Yapısı (Kurumsal)
+
+Bir şirketin ağ ihtiyaçları evdeki ağa benzer, ancak çok daha büyük ölçeklidir.
+
+### 1. Fiziksel Düzen
+
+Büyük binalarda Switch'ler öyle masa altında durmaz.
+
+* **Kablolama Dolabı/Odası:** Her katta kilitli bir kapının arkasında bir kablolama odası bulunur. Switch'ler buraya monte edilir.
+* **Kablolama:** Elektrikçiler, bu odadan çalışma masalarına ve toplantı odalarına kilometrelerce Ethernet kablosu çeker.
+* **Wireless:** Aynı alanda, insanların ofis içinde gezinirken çalışabilmesi ve Ethernet portu olmayan cihazların bağlanabilmesi için Wireless LAN da desteklenir.
+
+### 2. Bina Mimarisi
+
+Aşağıda 3 katlı bir bina görüyoruz. Burada kritik bir hiyerarşi var. Her kattaki Switch, kendi kafasına göre takılmaz; hepsi binanın "Merkezine" (Distribution Switch) bağlıdır.
+
+**[Tek Bina Enterprise Kablolu ve Wireless LAN]**
+
+```text
+       3. Kat Zemin
+      +---------------------+
+      | [PC3] ---- [SW3]    |  <--- (Zemin Access Switch)
+      +--------------|------+
+                     |
+       2. Kat Zemin  |
+      +--------------|------+
+      | [PC2] ---- [SW2]    |  <--- (Zemin Access Switch)
+      +--------------|------+
+                     |
+       1. Kat Zemin  |
+      +--------------|------+
+      | [PC1] ---- [SW1]    |  <--- (Zemin Access Switch)
+      +--------------|------+
+                     |
+             [ SWD (Dağıtım) ]  <--- (Merkez Switch)
+                     |
+                     |
+                 [ Router ]
+                     |
+               (WAN / Internet)
+
+```
+
+### Trafik Akışı
+
+Bu örnekte trafiğin nasıl aktığını anlamak çok önemli. Diyelim ki 3. kattaki **PC3**, 2. kattaki **PC2**'ye veri gönderecek.
+Kablolar katlar arasında direkt bağlı değildir. Veri şöyle bir yol izler:
+
+1. **PC3** -> **SW3** (3. Kat Switch'i)
+2. **SW3** -> **SWD** (Aşağıya, Merkez Dağıtıcı Switch'e iner)
+3. **SWD** -> **SW2** (Tekrar yukarı, 2. Kat Switch'ine çıkar)
+4. **SW2** -> **PC2** (Hedefe ulaşır)
+
+Bu yapıya "Hub-and-Spoke" veya "Star Topology" denir. Her şey merkeze iner ve oradan dağılır.
+
+### 3. Dış Dünyaya Açılmak (WAN)
+
+Örnekte Router'ın konumu da kritiktir.
+
+* **LAN'ın Kendisi:** Switch'ler ve Access Point'ler (AP) tarafından oluşturulur.
+* **LAN-WAN Bağlantısı:** Router, LAN ile WAN arasındaki köprüdür.
+* **Bağlantı Şekli:** Router, LAN'a bağlanırken basit bir Ethernet arayüzü ve Ethernet kablosu kullanır.
+
+---
