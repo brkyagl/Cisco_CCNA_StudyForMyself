@@ -394,7 +394,7 @@ Bir Ethernet Bağlantısından'dan bahsettiğimizde, iki Ethernet Node arasında
 
  Aşağıdaki yapıyı görelim. Bu, verinin bir uçtan diğer uca gitmesini sağlayan fiziksel zincirdir.
 
-**[Figure 2-6: Basic Components of an Ethernet Link]**
+**[Ethernet Bağlantısının Temel Bileşenleri]**
 
 ```text
        Node A (PC/Switch)                         Node B (Router/PC)
