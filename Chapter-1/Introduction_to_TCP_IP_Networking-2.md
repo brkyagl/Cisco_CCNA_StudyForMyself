@@ -409,7 +409,7 @@ Bir Ethernet Bağlantısından'dan bahsettiğimizde, iki Ethernet Node arasında
               \                                            /
                \__________________________________________/
                             (UTP Kablosu)
-                     (Copper Wires Inside)
+                        (İçindeki Bakır Teller)
 
 ```
 
