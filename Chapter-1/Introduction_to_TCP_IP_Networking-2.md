@@ -173,3 +173,71 @@ Bu yapıya "Hub-and-Spoke" veya "Star Topology" denir. Her şey merkeze iner ve 
 * **Bağlantı Şekli:** Router, LAN'a bağlanırken basit bir Ethernet arayüzü ve Ethernet kablosu kullanır.
 
 ---
+
+## Ethernet Fiziksel Katman Standartlarının Çeşitliliği 
+
+"Ethernet" dediğimiz şey tek bir kural değildir. 40 yıldır gelişen devasa bir **Standartlar Ailesidir**. Bu ailenin soyadı: **IEEE 802.3**.
+
+Bu standartlar temel olarak iki şeyi belirler:
+
+1. **Hız:** 10 Mbps'den başlar, bugün 400 Gbps'ye kadar çıkar.
+2. **Kablo Tipi:** Veri neyin üzerinden akacak? Bakır mı, cam mı?
+
+### Copper(Bakır) vs Fiber Savaşı
+
+Ethernet dünyasında iki ana iletim yolu vardır:
+
+1. **Copper (Bakır - UTP):**
+* **Mantık:** Veriyi elektrik sinyalleriyle iletir.
+* **Özellik:** Ucuzdur, bükülebilir, her yerde bulunur.
+* **İpucu:** Standart isminde genelde **"T"** harfi geçer (Twisted Pair - Çift Bükümlü: bu arada bunu ilk aklıma twister dondurma olarak kazımıştım hani şekli bükümlü falan :D).
+
+2. **Fiber-Optic (Fiber - Cam):**
+* **Mantık:** Veriyi ışık olarak iletir. Saç teli kadar ince cam liflerden oluşur.
+* **Özellik:** Pahalıdır ama çok uzun mesafelere gidebilir.
+* **İpucu:** Standart isminde genelde **"X"** harfi geçer.
+
+### İsimlerin Şifresini Çözmek
+
+Bir Ethernet kablosunun üzerinde `1000BASE-T` yazdığını göreceksin. Bu ne demek? Gel şifresini kıralım:
+
+**[Ethernet İsimlerini Decode Ediyoruz]**
+
+```text
+      1000   BASE    T
+       |       |     |
+       |       |     +--> Kablo Tipi
+       |       |          (T = Twisted Pair/Bakır, X = Fiber, vb.)
+       |       |
+       |       +--------> Sinyal Tipi
+       |                  (Baseband - Yani dijital sinyal)
+       |
+       +---------------->  Hız
+                          (10 = 10 Mbps, 1000 = 1000 Mbps / 1 Gbps)
+
+```
+
+### Bilmemiz Gerekenler
+
+Aşağıdaki tablo, CCNA sınavı için hayati önem taşır. Özellikle **Mesafe** sınırlarına dikkat et. Bakır kabloların 100 metre lanetini unutma!
+
+**[Ethernet Standartları]**
+
+| Hız | Halk Adı |  IEEE İsmi (Resmi Adı) | Kablo Tipi & Informal İsmi | Mesafe(Max) |
+| --- | --- | --- | --- | --- |
+| **10 Mbps** | Ethernet | **802.3** | **10BASE-T** (Bakır) | **100 m** |
+| **100 Mbps** | Fast Ethernet | **802.3u** | **100BASE-T** (Bakır) | **100 m** |
+| **1000 Mbps** | Gigabit Ethernet | **802.3z** | **1000BASE-LX** (Fiber) | **5000 m** (5 km) |
+| **1000 Mbps** | Gigabit Ethernet | **802.3ab** | **1000BASE-T** (Bakır) | **100 m** |
+| **10 Gbps** | 10 Gig Ethernet | **802.3an** | **10GBASE-T** (Bakır) | **100 m** |
+
+Tabloya dikkat et: Hız ne kadar artarsa artsın (10 Mbps'den 10 Gbps'ye çıksa bile), eğer **Bakır** kullanıyorsan sınırın hep **100 metre**dir.
+100 metreyi geçmek istiyorsan paraya kıyıp **Fiber (LX, SX vb.)** döşemek zorundasın :D
+
+### Sürekli Evrim 
+
+Ethernet 40 yıl önce başladı ama durmadı. IEEE ve endüstri ortakları (Ethernet Alliance) sürekli yeni standartlar geliştiriyor.
+
+* Amaç hep aynı: **Daha hızlı, daha uzağa.**
+
+---
