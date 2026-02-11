@@ -241,3 +241,69 @@ Ethernet 40 yıl önce başladı ama durmadı. IEEE ve endüstri ortakları (Eth
 * Amaç hep aynı: **Daha hızlı, daha uzağa.**
 
 ---
+
+## Hız Değişir, Kural Değişmez
+
+Ethernet fiziksel olarak binbir çeşit kılığa girebilir (Bakır, Fiber, Hızlı, Yavaş). Ancak mantıksal olarak **tek bir teknoloji** gibi davranır.
+**Neden?** Çünkü fiziksel katman ne olursa olsun, **Data-Link Layer** standardı her zaman aynıdır.
+
+* **Header** ve **Trailer** formatı asla değişmez.
+* İster 10 Mbps'lik eski bir bakır kablo olsun, ister 100 Gbps'lik süper hızlı bir fiber kablo; taşınan paketin (Ethernet Frame) yapısı birebir aynıdır.
+
+**Olayın özü yani:**
+> Fiziksel katman "Bit'leri kablodan nasıl geçiririm?" derdindedir.
+> Data-Link katmanı ise "Bu zarfı (Frame) adrese nasıl teslim ederim?" derdindedir. Zarfın kağıdı (kablo) değişse de, üzerindeki adres yazma kuralı (Frame formatı) değişmez.
+
+###  Bir Frame'in Yolculuğu
+
+Örnekle canlandıralım. Burada PC1'den çıkan bir verinin, PC3'e giderken nasıl farklı yollardan geçtiğini ama hiç bozulmadığını görüyoruz.
+
+**Senaryo:** PC1 bir Ethernet Frame'i oluşturur ve yola çıkarır. Hedef PC3'tür.
+
+**[Ethernet LAN, birçok bağlantı türü üzerinden Data-Link Frame iletir]**
+
+```text
+      [ PC1 ]
+         |
+         | (Bağlantı 1: 10 Mbps - UTP Bakır)
+         v
+      [ SW1 ]
+         |
+         | (Bağlantı 2: 1 Gbps - Fiber Optic - 200m)
+         v
+      [ SW2 ]
+         |
+         | (Bağlantı 3: 10 Gbps - Fiber Optic - 1km)
+         v
+      [ SW3 ]
+         |
+         | (Bağlantı 4: 100 Mbps - UTP Bakır)
+         v
+      [ PC3 ]
+
+```
+
+### Yol Boyunca Neler Oldu?
+
+Bu yolculukta Frame tam 4 farklı yoldan geçti:
+
+1. **Bağlantı 1:** Yavaş bir bakır kablo (10 Mbps).
+2. **Bağlantı 2:** Hızlı bir fiber kablo (1 Gbps).
+3. **Bağlantı 3:** Çok hızlı ve uzun bir fiber kablo (10 Gbps, 1km).
+4. **Bağlantı 4:** Orta hızda bir bakır kablo (100 Mbps).
+
+Hız 1000 kat arttı, kablo camdan bakıra döndü, mesafe uzadı kısaldı...
+AMA **Ethernet Frame** (Header + Data + Trailer) yapısı milim değişmedi.
+
+SW1, SW2 ve SW3; gelen paketin hangi kablodan geldiğine bakmaksızın, sadece üzerindeki **Header**'ı okudu ve bir sonraki durağa iletti.
+
+### Özet Tanım
+
+O zaman "Ethernet LAN nedir?" sorusuna en güzel cevabı verelim:
+
+Ethernet LAN; kullanıcı cihazlarının, Switch'lerin ve farklı kablo türlerinin birleşimidir.
+
+* Her bağlantı farklı hızda ve türde olabilir.
+* Ancak hepsi, **Ethernet Frame** adı verilen ortak bir dili konuşarak anlaşırlar.
+
+---
