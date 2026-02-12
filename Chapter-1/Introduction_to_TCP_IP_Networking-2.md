@@ -777,3 +777,162 @@ Bir Gigabit Crossover kablosunda sadece 1-3, 2-6 değil; **AYNI ZAMANDA** 4-7 ve
 
 ---
 
+## Fiber ile Fiziksel Ethernet LAN'lar Oluşturma (Fiber Optik Dünyası)
+
+Bir kurumsal ağda kablolama stratejisi şöyledir:
+
+1. **UTP (Bakır):** Masalara giden kısa yollar (Access Layer). Çünkü ucuz ve 100 metre çoğu zaman yeterli.
+2. **Fiber:** Uzun mesafeler ve ağın omurgası yani backbone.
+
+### Maliyet ve Mesafe Dengesi
+
+* **UTP:** Ucuzdur, kurulumu kolaydır ama **100 metre** sınırına takılır. Ayrıca elektrik gürültüsünden (EMI) etkilenir.
+* **Fiber:** Pahalıdır, kurulumu hassastır ama **kilometrelerce** gidebilir. Elektrikten etkilenmez (çünkü ışık kullanır).
+
+### Fiber Nerede Kullanılır?
+
+Fiberi genelde "Switchler arası" bağlantılarda görürüz.
+
+**[UTP vs. Fiber Kullanım Senaryosu]**
+
+```text
+       Bina A                                        Bina B
+      (3. Kat)                                      (1. Kat)
+     +-----------+                                +-----------+
+     | [Switch A]|                                | [Switch B]|
+     +-----+-----+                                +-----+-----+
+           |                                            |
+           | (Fiber Cable - 500m / 2km / 10km...)       |
+           | <========================================> | (Backbone Bağlantısı)
+           |             (Cam Core)                     |
+           |                                            |
+           v                                            v
+      (UTP < 100m)                                 (UTP < 100m)
+           |                                            |
+        [ PC ]                                       [ PC ]
+
+```
+
+* **PC -> Switch:** Kısa mesafe olduğu için **UTP** (Bakır) kullanılır.
+* **Switch A -> Switch B:** Binalar arası mesafe 100 metreyi geçtiği için mecbur **Fiber** kullanılır.
+
+Fiber sadece mesafe için değil, **güvenlik** ve **gürültü** için de seçilir. 
+Fabrika gibi çok fazla manyetik alanın (büyük motorlar, jeneratörler) olduğu yerlerde bakır kablo sinyali bozar. Fiber cam olduğu için manyetik alandan etkilenmez.
+
+### Fiber Kablonun Anatomisi
+
+Fiber kablolar, veriyi elektrik yerine **ışık** darbeleri olarak iletir bunu biliyoruz.
+
+* **0 ve 1:** Işık var (1), Işık yok (0) veya Işığın şiddeti değişiyor.
+* **Malzeme:** Merkezde çok ince, esnek bir cam bulunur.
+
+### Fiber Kablo Katmanları
+
+Fiber kablo sadece camdan ibaret değildir. O narin camın kırılmaması için kat kat zırhlanması gerekir. İçten dışa doğru şu katmanları görürüz:
+Ama yine de webte, katmanları görsel olarak göreceğiniz figürlere bakın.
+
+**[Fiber-Optic Yapısı]**
+
+```text
+             Kesit Görünümü                    Yan Profil Görünümü
+      ----------------------------           ------------------------
+      
+      [ Outer Jacket ] (En Dış)  ----------->  =========== (Kablo Dışı) (5)
+             |
+      [ Strengthener ] (Kevlar)  ----------->  =========== (Güçlendirici İpler) (4)
+             |
+        [ Buffer ]     (Tampon)  ----------->  =========== (Plastik Koruma) (3)
+             |
+       [ Cladding ]    (Kılıf)   ----------->  =========== (Yansıtıcı Cam) (2)
+             |
+         [ CORE ]      (Çekirdek) ---------->  =========== (Işığın Gittiği Yol) (1)
+
+```
+
+1. **Core:**
+* En içteki kısımdır.
+* Işığın (Verinin) geçtiği asıl cam tüneldir. Saç telinden bile incedir.
+
+2. **Cladding (Kılıf/Kaplama):**
+* Core'un hemen etrafını saran ikinci cam katmandır.
+* **Görevi:** Işığı Core'un içinde hapseder (Ayna gibi yansıtarak ışığın dışarı kaçmasını engeller).
+
+3. **Buffer (Tampon):**
+* Cama zarar gelmesin diye onu saran plastik tabakadır.
+
+4. **Strengthener (Güçlendirici):**
+* Kablo çekilirken veya bükülürken kopmasın diye araya eklenen iplerdir (Genelde kurşun geçirmez yeleklerde kullanılan **Kevlar** malzemesi kullanılır).
+
+
+### Işık Nasıl İlerler?
+
+Işık, **Core** (Çekirdek) içinden geçerken düz bir çizgide gitmez (Multimode için bunu not al). Dışarı kaçmaya çalışır.
+
+* **Cladding(Kılıfın) Rolü:** Cladding, Core'dan daha farklı bir cam yapısına sahiptir. Işık Cladding'e çarptığında, Cladding onu bir ayna gibi tekrar Core'un içine yansıtır.
+* **İç Yansıma:** Bu sayede ışık, kablonun içinde zikzaklar çizerek seke seke ilerler ve dışarı kaçmaz.
+
+### Multimode (MMF) vs. Single-Mode (SMF)
+
+Fiber kablolar, ışığı taşıma şekline göre ikiye ayrılır.
+
+#### 1. Multimode Fiber (MMF - Çok Modlu)
+
+* **Kaynak:** **LED** kullanır.
+* **Core:** Çekirdeği geniştir.
+* **Işığın Hareketi:** Geniş olduğu için ışık farklı açılardan girer ve duvarlara çarparak ilerler.
+* **Kullanım:** Daha kısa mesafeler (Bina içi, kampüs içi 400m-500m civarı).
+* **Maliyet:** Kablo ve cihazları daha ucuzdur.
+
+**[Multimode Fiber Gönderimi]**
+
+```text
+       [ LED ]  ~ ~ ~ >  / \ / \ / \ / \ / \   (Işık Sekmeleri)
+                        =====================
+                           Core (Geniş)
+                        =====================
+
+```
+
+#### 2. Single-Mode Fiber (SMF - Tek Modlu)
+
+* **Kaynak:** **Laser** kullanır.
+* **Core:** Çekirdeği çok incedir (MMF'in 5'te 1'i kadar).
+* **Işığın Hareketi:** Çekirdek o kadar dardır ki, ışık sekecek yer bulamaz. Mecburen "tek bir modda" dümdüz (ok gibi) gider.
+* **Kullanım:** Çok uzun mesafeler (Kilometrelerce, şehirlerarası).
+* **Maliyet:** Lazer teknolojisi pahalı olduğu için donanımı (SFP+) daha pahalıdır.
+
+**[Single-Mode Fiber Gönderimi]**
+
+```text
+       [ LASER ] ----->  ---------------------   (Düz Işık)
+                         =====================
+                         =====================
+                             Core (İnce)
+
+```
+
+### Tx ve Rx Kuralı
+
+UTP kablosunun içinde hem gidiş hem geliş telleri vardı. Fiberde ise (genellikle) her bir cam tel tek yönlüdür.
+Bu yüzden cihazları bağlarken **2 Tel** kullanırız:
+
+1. **Tx (Transmit):** Göndermek için.
+2. **Rx (Receive):** Almak için.
+
+**[Rx'e Bağlı Tx'li İki Fiber Kablo]**
+
+Tıpkı UTP'deki gibi, birinin ağzı diğerinin kulağına bağlanmalıdır.
+
+```text
+       Cihaz A                                       Cihaz B
+      ----------                                   ----------
+      [ Tx ] ----------------(Fiber Tel 1)---------> [ Rx ]
+      
+      [ Rx ] <---------------(Fiber Tel 2)---------- [ Tx ]
+
+```
+
+Sahada fiber kablo takarken uçlarına bakarsan genelde ikili bitişik konektörler (LC veya SC connector) görürsün. Biri Tx, biri Rx içindir. Eğer tek tek takıyorsan ve link ışığı yanmıyorsa, uçları ters çevir (Tx'i Rx'e tak).
+
+---
+
