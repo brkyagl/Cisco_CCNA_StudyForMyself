@@ -506,3 +506,171 @@ Sahada SFP ve SFP+ fiziksel olarak birbirine çok benzer (aynı boyuttadır). Ü
 (Bu arada bu kabloları, konnektörleri vs. mutlaka webten resimlerine bakın.)
 
 ---
+
+## Kablo Sıralaması ve Kurallar
+
+Bir Ethernet kablosunun içinde 8 tel (4 çift) olduğunu biliyoruz. Ama bu telleri rastgele bağlayamayız.
+
+* **Çiftlik Ortamı:** Kendi tarlanda kamyonu istediğin gibi sürersin, kimse karışmaz.
+* **Otoban Ortamı:** Ana yola çıktığın an, belli bir şeritten gitmek, hız kurallarına uymak zorundasın.
+
+Ethernet standartları da (10BASE-T ve 100BASE-T) bu "Otoban Kuralları"nı belirler. Hangi pinin veri göndereceğini, hangisinin veri alacağını kesin olarak tanımlar.
+
+### 10BASE-T ve 100BASE-T (Özel Durum)
+
+Bu iki standart (Eski 10 Mbps ve Hızlı 100 Mbps) çok ilginç bir özelliğe sahiptir:
+
+1. **Sadece 2 Çift Kullanırlar:** Kablonun içinde 4 çift (8 tel) olsa da, bu standartlar trafiği yönetmek için sadece **2 çiftini (4 tel)** kullanır.
+2. **Boşta Kalanlar:** Diğer 2 çift (4 tel) boşta durur, kullanılmaz.
+
+10BASE-T ve 100BASE-T, iletişimi sağlamak için kablonun içindeki 1, 2, 3 ve 6 numaralı pinleri kullanır. (Diğerleri 4, 5, 7, 8 boştadır).
+Ancak **Gigabit Ethernet (1000BASE-T)** geldiğinde işler değişecek; o, 4 çiftin hepsini kullanacak.
+
+### 1. Altın Kural (Straight-Through)
+
+10BASE-T ve 100BASE-T sadece **2 Çift (4 Tel)** kullanır dedik. Peki hangi pinler? **Cevap:** 1, 2, 3 ve 6.
+Ama her cihaz bu pinleri aynı amaçla kullanmaz. İşte burası çok kritik:
+
+* **PC (NIC):**
+* **Konuşur (Transmitter - Tx):** Pin **1 ve 2**
+* **Dinler (Receiver - Rx):** Pin **3 ve 6**
+
+* **Switch:**
+* **Dinler (Receiver - Rx):** Pin **1 ve 2**
+* **Konuşur (Transmitter - Tx):** Pin **3 ve 6**
+
+Dikkat ettiysen Switch, PC'nin tam **zıttı** olarak tasarlanmıştır.
+PC 1 ve 2'den bağırır, Switch 1 ve 2'den dinler. Bu sayede kabloyu dümdüz (Pin 1 -> Pin 1'e) bağlasak bile iletişim sağlanır.
+
+### Akışı Görelim
+
+PC ve Switch arasındaki akışın nasıl başladığını görelim.
+
+**[Her Yön için Bir Çift Kullanma (10/100 Mbps)]**
+
+```text
+         PC (Gönderici)                                Switch (Alıcı)
+        -------------                                -------------------
+        Tx [Pin 1]  ------------------------------>  [Pin 1] Rx
+        Tx [Pin 2]  ------------------------------>  [Pin 2] Rx
+           (Twisted Pair 1: Veri Gönderimi ->)
+
+
+        Rx [Pin 3]  <------------------------------  [Pin 3] Tx
+        Rx [Pin 6]  <------------------------------  [Pin 6] Tx
+           (Twisted Pair 2: <- Veri Alımı)
+
+```
+
+1. **Üstteki Çift (1 ve 2):** PC buradan veri gönderir, Switch buradan veriyi alır.
+2. **Alttaki Çift (3 ve 6):** Switch buradan cevap verir, PC buradan cevabı alır.
+
+Bu "Zıt Karakterli" (PC vs Switch) tasarım sayesinde, araya taktığımız kablonun tellerini çaprazlamamıza gerek kalmaz. Dümdüz kablo (**Straight-Through**) işimizi görür.
+
+### Straight-Through Pinout (Düz Kablo - Bağlantı)
+
+Önce bir terimi netleştirelim: **Pinout**.
+* **Tanım:** RJ-45 konnektöründeki 8 adet pin yuvasına hangi renk telin gireceğini belirleyen sıralamaya "Pinout" denir.
+
+PC'yi Switch'e bağlarken kullandığımız standart kabloya **Straight-Through (Düz)** kablo denir. Adı üstünde, sinyal "dümdüz" karşıya geçer.
+
+#### Mantığı Nedir? 
+
+Düz kabloda hiçbir hile yoktur:
+
+* Kablonun bir ucundaki **Pin 1**, diğer ucundaki **Pin 1**'e gider.
+* **Pin 2** -> **Pin 2**'ye gider.
+* **Pin 3** -> **Pin 3**'e gider.
+* Ve en önemlisi: **Pin 6** -> **Pin 6**'ya gider.
+
+Hatırlarsan 10BASE-T ve 100BASE-T sadece 1, 2, 3 ve 6. pinleri kullanıyordu. Bu yüzden Düz Kablo şemalarında genelde 4, 5, 7 ve 8. pinlerin "Not Used" (Kullanılmıyor) olduğunu görürsün.
+
+### Kablo Röntgeni
+
+Burada sol tarafta PC'nin gönderdiği sinyalin, sağ tarafta Switch'in doğru pinine nasıl "dümdüz" gittiğini göreceğiz.
+
+**[10BASE-T ve 100BASE-T Straight-Through Pinout]**
+
+```text
+       A Yüzü (PC Ports)                     B Yüzü (Switch Ports)
+      -----------------                     ---------------------
+      Pin 1 (Tx) -------------------------> Pin 1 (Rx)
+      Pin 2 (Tx) -------------------------> Pin 2 (Rx)
+      Pin 3 (Rx) <------------------------- Pin 3 (Tx)
+      Pin 4 (Not Used)                      Pin 4 (Not Used)
+      Pin 5 (Not Used)                      Pin 5 (Not Used)
+      Pin 6 (Rx) <------------------------- Pin 6 (Tx)
+      Pin 7 (Not Used)                      Pin 7 (Not Used)
+      Pin 8 (Not Used)                      Pin 8 (Not Used)
+```
+
+**Neden Çalışıyor?** Bir önceki konuda öğrenmiştik:
+
+* **PC:** 1 ve 2'den konuşur (Tx).
+* **Switch:** 1 ve 2'den dinler (Rx).
+
+Kabloyu **düz (1-1, 2-2)** bağladığımızda, PC'nin ağzı direkt Switch'in kulağına denk gelir. Bu yüzden PC ve Switch arasında **Straight-Through(Düz Kablo)** kullanılır.
+
+### Neden Düz Kablo Çalışır?
+
+Berkay (PC) ve Switch arasındaki ilişkiyi görelim.
+
+* **Berkay (PC):** Pin 1 ve 2'den konuşur (Tx).
+* **Switch:** Pin 1 ve 2'den dinler (Rx).
+
+Bu cihazlar "Zıt Karakterli" olduğu için, kabloyu dümdüz bağlamak yeterlidir. Berkay'ın ağzı, Switch'in kulağına denk gelir.
+
+**[Ethernet Straight-Through Kablo Konsepti]**
+
+```text
+       Berkay (PC)                                  Switch
+      ------------                                 --------
+      Tx [1, 2]  ------------------------------>  [1, 2] Rx  ---> Berkay 1,2 pinlerinden yolluyor, switch ise alıyor.
+      Rx [3, 6]  <------------------------------  [3, 6] Tx  ---> Berkay 3,6 pinlerinden alıyor, switch ise yolluyor.
+
+```
+
+### Aynı Cihazlar Sorunu
+
+Peki ya iki tane **Switch'i** birbirine bağlarsak ne olur? (Veya iki PC'yi?)
+
+İşte o zaman şöyle bir durum yaşanır:
+
+1. **Switch A:** Pin 3 ve 6'dan konuşur (Tx).
+2. **Switch B:** O da Pin 3 ve 6'dan konuşur (Tx).
+
+Eğer araya Düz Kablo takarsan ne olur?
+
+* **Tx -> Tx:** İkisi de aynı hattan bağırır.
+* **Rx -> Rx:** İkisi de aynı hattan dinler ama ses gelmez.
+* **Sonuç:** İletişim kopar.
+
+### Çözüm: Crossover Cable (Çapraz Kablo)
+
+Bu sorunu çözmek için kablonun içindeki telleri bizim çaprazlamamız gerekir. Buna **Crossover Cable** denir.
+**Görevi:** Bir tarafın gönderdiği (Tx) sinyali alır, havada takla attırıp diğer tarafın dinlediği (Rx) pine sokar.
+
+**[Crossover Ethernet Cable Konsepti]**
+
+Burada Switch'ten Switch'e bağlantı örneğini görüyoruz.
+
+```text
+       Switch A                                     Switch B
+      ----------                                   ----------
+      Rx [1, 2]  <-------------X-----------------  [3, 6] Tx
+                                \ /
+                                 X   (CROSSOVER)
+                                / \
+      Tx [3, 6]  --------------X---------------->  [1, 2] Rx
+
+```
+
+**Dikkat Et:**
+
+* Kablonun solundaki **Pin 1**, sağdaki **Pin 3**'e gider.
+* Kablonun solundaki **Pin 2**, sağdaki **Pin 6**'ya gider.
+
+Düz kablonun tersi gibi düşün bilgisayar > switch normalde: 1,2 -> 1,2 ama bunda 1,2 -> 3,6. 
+
+> * **Farklı Cihazlar (PC <-> Switch):** Straight-Through.
+> * **Aynı Cihazlar (Switch <-> Switch, PC <-> PC):** Crossover.
