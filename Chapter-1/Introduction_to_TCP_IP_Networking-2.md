@@ -674,3 +674,68 @@ Düz kablonun tersi gibi düşün bilgisayar > switch normalde: 1,2 -> 1,2 ama b
 
 > * **Farklı Cihazlar (PC <-> Switch):** Straight-Through.
 > * **Aynı Cihazlar (Switch <-> Switch, PC <-> PC):** Crossover.
+
+## Hangi Kabloyu Seçmeliyim?
+
+Sınavda iki cihaz verecekler ve "Aradaki kablo ne olmalı?" diye soracaklar. Ezberlemene gerek yok, sadece şu basit mantığı kur:
+
+### 1. Mantık
+
+* **Aynı Takı -> Crossover:**
+İki cihaz da aynı pinlerden (Örn: 1 ve 2) konuşuyorsa, seslerinin çarpışmaması için kabloyu çaprazlaman gerekir.
+* **Örnek:** Switch <-> Switch, PC <-> PC, Router <-> PC.
+
+* **Farklı Takım -> Straight-Through:**
+Biri 1,2'den konuşurken diğeri 3,6'dan konuşuyorsa, birbirlerini tamamlıyorlardır. Kabloyu düz takman yeterlidir.
+* **Örnek:** PC <-> Switch.
+
+### 2. Takımlar: Kim Kimdir?
+
+Bu tabloyu adın gibi bilmelisin. Cihazları iki takıma ayırıyoruz:
+
+**[Cihaz Pinout Grupları (10/100BASE-T)]**
+
+| **Takım 1 (1,2 üzerinden gönderir)** | **Takım 2 (3,6'da gönderir)** |
+| --- | --- |
+| **PC NICs** | **Switches** |
+| **Routers** | **Hubs** (Hublar - Eski ama sınavda çıkar) |
+| **Wireless Access Points** (AP'ler) |  |
+
+Çoğu öğrenci **Router**'ı karıştırır. Router, Switch gibi değil, **PC gibi** davranır (Tx = 1,2).
+Bu yüzden **PC'yi Router'a bağlarken Crossover kablo gerekir!** (İkisi de aynı takımda).
+
+### 3. Senaryo: Kampüs Ağı
+
+Burada PC'ler Switch'lere, Switch'ler de birbirine bağlanıyor. Kablo seçimlerine dikkat et.
+
+**[Straight ve Crossover Kabloların Tipik Kullanım Alanları]**
+
+```text
+      Bina 1                                         Bina 2
+      +------------------------+                     +------------------------+
+      |  [PC]                  |                     |                  [PC]  |
+      |    | (Düz)             |                     |             (Düz) |    |
+      |    v                   |                     |                   v    |
+      | [Switch 11]            |                     |            [Switch 22] |
+      |    |                   |                     |                   ^    |
+      |    | (Çapraz)          |                     |       (Çapraz)    |    |
+      |    v                   |                     |                   |    |
+      | [Switch 12] ---------->| (Çapraz Kablo) |<---------- [Switch 21] |
+      +------------------------+                     +------------------------+
+
+```
+
+1. **PC -> Switch:** Farklı takımlar (1,2 vs 3,6). **Straight-Through** kullanılır.
+2. **Switch -> Switch:** Aynı takımlar (3,6 vs 3,6). **Crossover** kullanılır.
+
+### Gerçek Hayat vs. Sınav (CISCO AUTO-MDIX FARKI)
+
+Burada çok önemli bir parantez açalım.
+
+**Gerçek Hayat:** Eve gittin, yanlış kabloyu taktın (Mesela Switch-Switch arasına Düz kablo taktın). Çalışır mı? **Evet, %99 çalışır.**
+Çünkü modern Cisco cihazlarda **Auto-MDIX** denen bir özellik vardır. Cihaz yanlış kabloyu fark eder ve elektronik olarak pinlerin yerini kendisi değiştirir. Efsane değil mi ya? 
+**Sınav Dünyası (CCNA Exam):** Auto-MDIX yokmuş gibi davranacaksın!
+Sınavda sana "Switch ile Switch arasına ne takılır?" derlerse, **"Crossover"** diyeceksin. "Ama evde düz kabloyla çalışıyor" dersen puanı silerler. 
+
+---
+
