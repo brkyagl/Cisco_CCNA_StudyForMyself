@@ -737,5 +737,43 @@ Burada çok önemli bir parantez açalım.
 **Sınav Dünyası (CCNA Exam):** Auto-MDIX yokmuş gibi davranacaksın!
 Sınavda sana "Switch ile Switch arasına ne takılır?" derlerse, **"Crossover"** diyeceksin. "Ama evde düz kabloyla çalışıyor" dersen puanı silerler. 
 
+## 1000BASE-T için UTP Kablolama Pinouts (Gigabit Ethernet)
+
+Gigabit Ethernet (1000BASE-T), önceki standartlardan (10/100) iki temel farkla ayrılır:
+
+1. **4 Çiftin Hepsi:** Artık 4, 5, 7 ve 8 numaralı pinler süs diye durmuyor. Gigabit hızına ulaşmak için kablonun içindeki **8 telin tamamı** kullanılır.
+2. **İleri Teknoloji:** 10/100'de bir çift sadece konuşur (Tx), diğeri sadece dinlerdi (Rx). Gigabit'te ise teknoloji o kadar ilerlemiştir ki, her bir tel çifti **aynı anda hem veri gönderebilir hem de alabilir.**
+
+### Gigabit Straight-Through Kablo 
+
+Mantık yine aynıdır: Pinler karşılıklı (1-to-1) eşleşir. Ancak bu sefer kadro tamdır.
+
+**[1000BASE-T'ye 4-Pair Straight Kablo]**
+
+```text
+       PC (A yüzü)                          Switch (B yüzü)
+      -------------                        -----------------
+      Çift 1: [1, 2] --------------------> [1, 2] : Çift 1
+      Çift 2: [3, 6] --------------------> [3, 6] : Çift 2
+      
+      -- NEW FOR GIGABIT --
+      Çift 3: [4, 5] --------------------> [4, 5] : Çift 3
+      Çift 4: [7, 8] --------------------> [7, 8] : Çift 4
+
+```
+
+1->1, 2->2, ... 8->8. Hiçbir pin boşta kalmaz.
+
+### Gigabit Crossover Kablo 
+
+İşte burası sınavda can yakar. 10/100 için sadece Turuncu ve Yeşil çiftleri (1,2 ve 3,6) çaprazlıyorduk.
+
+Gigabit'te ise **Double Crossover (çifte)** yapılır:
+
+1. **Klasik Çapraz:** 1,2 ile 3,6 yer değiştirir. (Mavi ve Turuncu gibi düşün).
+2. **Yeni Çapraz:** 4,5 ile 7,8 yer değiştirir. (Mavi ve Kahverengi çiftleri).
+
+Bir Gigabit Crossover kablosunda sadece 1-3, 2-6 değil; **AYNI ZAMANDA** 4-7 ve 5-8 pinleri de çaprazlanır. Yani kablonun içi tam bir düğüm gibidir.
+
 ---
 
