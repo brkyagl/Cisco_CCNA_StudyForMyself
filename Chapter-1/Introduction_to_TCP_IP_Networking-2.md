@@ -429,6 +429,8 @@ Kablonun dışındaki plastik kılıfı soyarsan içinde birbirine bükülmüş 
 Kablonun içinde toplam **4 Çift (8 Tel)** vardır. Ancak hız standartlarına göre kullanım değişir:
 * **10BASE-T & 100BASE-T:** Sadece **2 Çift** (4 Tel) kullanır.
 * **1000BASE-T (Gigabit):** **4 Çiftin tamamını** (8 Tel) kullanır.
+
+https://www.computercablestore.com/straight-through-crossover-and-rollover-wiring
  
 ### 3. O Meşhur Uç RJ-45 Konnektör
 
