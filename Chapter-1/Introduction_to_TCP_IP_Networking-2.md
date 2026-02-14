@@ -936,5 +936,49 @@ Tıpkı UTP'deki gibi, birinin ağzı diğerinin kulağına bağlanmalıdır.
 
 Sahada fiber kablo takarken uçlarına bakarsan genelde ikili bitişik konektörler (LC veya SC connector) görürsün. Biri Tx, biri Rx içindir. Eğer tek tek takıyorsan ve link ışığı yanmıyorsa, uçları ters çevir (Tx'i Rx'e tak).
 
----
+## Fiber Standartları ve Karşılaştırma
+
+Fiber kullanmak için Switch'in üzerinde uygun yuvanın (SFP+) olması gerekir. Hatırlarsan SFP+ modülleri tak-çıkar yapıdaydı. Bu sayede istediğin standardı (kısa mesafe veya uzun mesafe) seçip takabilirsin.
+
+### Standartlar 
+
+IEEE, fiber standartlarına isim verirken harfleri kodlar. Bu harflerin ne anlama geldiğini bilirsen ezber yapmana gerek kalmaz:
+
+* **S (Short):** Kısa Mesafe -> **Multimode**
+* **L (Long):** Uzun Mesafe -> **Single-Mode**
+* **E (Extended):** Çok Uzun Mesafe -> **Single-Mode**
+
+Aşağıdaki tablo, **10 Gbps (10GBASE)** standartlarının özetidir.
+
+**[10-Gbps Fiber Standartları]**
+
+| Standard | Anlamı | Kablo Tipi | Max |
+| --- | --- | --- | --- |
+| **10GBASE-S** | **S**hort (Kısa) | **MM** (Multimode) | **400 m** |
+| **10GBASE-LX4** | - | **MM** (Multimode) | **300 m** |
+| **10GBASE-LR** | **L**ong (Uzun) | **SM** (Single-Mode) | **10 km** |
+| **10GBASE-E** | **E**xtended (Ekstra Uzun) | **SM** (Single-Mode) | **30km - 40km** |
+
+Bir "Ofis Parkı" veya kampüs düşün. Binalar yan yanaysa (birkaç yüz metre) **Multimode (S)** yeterlidir. Ama şehrin diğer ucundaki şubeye gideceksen **Single-Mode (L veya E)** şarttır.
+
+### Nihai Karşılaşma: UTP vs. MM vs. SM
+
+Peki neden her yere Fiber döşemiyoruz? Veya neden her yere UTP çekmiyoruz? İşte networkçü kararı burada devreye girer: **Maliyet vs. Performans.**
+
+Aşağıdaki tablo, bu üç teknolojinin karnesidir.
+
+**[Karşılaştırma: UTP, Multimode, ve Single-Mode]**
+
+| Kriter | **UTP** | **Multimode** | **Single-Mode** |
+| --- | --- | --- | --- |
+| **Maliyet (Kablolama)** | **Düşük (Low)** | Orta | Orta |
+| **Maliyet (Switch Portu/SFP)** | **Düşük** | Orta (LED ucuzdur) | **Yüksek** (Lazer pahalıdır) |
+| **Mesafe** | **En Kötü (100m)** | Orta (500m) | **En İyi (30-40km+)** |
+| **EMI** | **Düşük** (Etkilenir) | **Tam** | **Tam** |
+| **Güvenlik** | **Düşük** (Riskli) | **Tam** | **Tam** |
+
+### Fiber Neden Daha Güvenli?
+
+1. **EMI:** Fabrikada büyük motorların yanından UTP geçirirsen, motorun manyetik alanı kablodaki veriyi bozar. Fiber **cam** olduğu için elektrikten/mıknatıstan etkilenmez. Fabrikalar için fiber şarttır.
+2. **Güvenlik:** Bakır kablodan geçen elektrik dışarıya çok hafif bir sinyal yayar. Kötü niyetli biri hassas cihazlarla kabloya dokunmadan veriyi çalabilir. Fiberde ise ışık camın içinde hapsolur, dışarı sızmaz. Bu yüzden askeriye ve devlet daireleri fiberi sever.
 
