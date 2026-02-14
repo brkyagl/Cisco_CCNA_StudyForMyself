@@ -652,7 +652,7 @@ Eğer araya Düz Kablo takarsan ne olur?
 Bu sorunu çözmek için kablonun içindeki telleri bizim çaprazlamamız gerekir. Buna **Crossover Cable** denir.
 **Görevi:** Bir tarafın gönderdiği (Tx) sinyali alır, havada takla attırıp diğer tarafın dinlediği (Rx) pine sokar.
 
-**[Crossover Ethernet Cable Konsepti]**
+**[Crossover Ethernet Kablo Konsepti]**
 
 Burada Switch'ten Switch'e bağlantı örneğini görüyoruz.
 
@@ -864,7 +864,6 @@ Ama yine de webte, katmanları görsel olarak göreceğiniz figürlere bakın.
 
 4. **Strengthener (Güçlendirici):**
 * Kablo çekilirken veya bükülürken kopmasın diye araya eklenen iplerdir (Genelde kurşun geçirmez yeleklerde kullanılan **Kevlar** malzemesi kullanılır).
-
 
 ### Işık Nasıl İlerler?
 
@@ -1319,5 +1318,141 @@ Switch'lerin ve PC'lerin kullandığı modern yöntemdir.
 > * **Gi veya G:** Gigabit Ethernet (1000 Mbps)
 > Sınavda arayüz isimlerine bakarak hızı tahmin etmek gerekebilir.
 
+## LAN Hub'ları ile Half Duplex Kullanımı (Hublar ve Çarpışma Sorunu)
+
+1990'larda Switch yoktu, **Hub** vardı. Hub'lar fiziksel olarak Switch'e benzer (üzerinde portlar vardır), ama çalışma mantığı tamamen farklıdır.
+
+### 1. Aptal Kutu: Hub 
+
+* **Layer 1 Cihazı:** Hub bir **Fiziksel Katman (Layer 1)** cihazıdır.
+* **Kör ve Sağır:** MAC adresi nedir bilmez. Frame nedir bilmez. Header okumaz.
+* **Çalışma Mantığı:** Bir portundan elektrik sinyali girdiğinde, onu güçlendirir ve **geldiği port hariç diğer TÜM portlara** aynen kopyalar. Bir odada biri konuşunca Hub, o sesi megafonla diğer herkese bağırır. "Bu laf kime?" diye bakmaz.
+* 
+### 2. Problem: Collisions 
+
+Hub'ın bu "her şeyi herkese yolla" huyu büyük bir soruna yol açar. Eğer iki kişi aynı anda konuşursa ne olur? Sesler birbirine karışır.
+
+**[LAN Hub Davranışı Nedeniyle Meydana Gelen Collision]**
+
+Bu şemada **Berkay** ve **Irem** aynı anda veri göndermeye çalışıyor. Hub ise (saf olduğu için :D) ikisinin de sinyalini alıp **Ahmet**'e iletiyor.
+
+```text
+       [ Ahmet ]
+           ^
+           | (Collision! Gürültü!)
+           |
+      [   HUB   ]  <--- (Her şeyi tekrarlar)
+      /         \
+     / (1A)      \ (1B)
+ [Berkay]      [ Irem ]
+ (Sends)       (Sends)
+
+```
+
+İki elektrik sinyali kabloda çarpışır ve bozulur. Veri çöp olur.
+
+###  Switch vs. Hub 
+
+Eğer bu örnekte Hub yerine **Switch** olsaydı:
+
+* Switch **Layer 2** cihazıdır.
+* MAC adreslerine bakar.
+* Ahmet'e iki paket aynı anda gitmesi gerekse bile, birini gönderir, diğerini **sıraya** koyar. Asla çarpıştırmaz.
+
+### Hub'lar için Çözüm: Half-Duplex Mantık
+
+Madem Hub trafiği yönetemiyor, o zaman cihazlar (PC'ler) kendi başının çaresine bakmalıdır. İşte burada **Half-Duplex** devreye girer.
+
+**Kural (Half-Duplex):**
+
+* "Dinlemeden Konuşma!"
+* Eğer hatta biri konuşuyorsa (elektrik varsa), **BEKLE**.
+* Sadece hat sessizken gönder.
+
+Eğer Irem, Berkay'ın konuştuğunu (kablodan sinyal geldiğini) fark ederse, kendi verisini göndermez ve bekler. Böylece çarpışma önlenir.
+
+### Hub vs. Switch Tablosu
+
+| Özellik | **HUB** | **SWITCH** |
+| --- | --- | --- |
+| **Layer** | **Layer 1** (Physical) | **Layer 2** (Data-Link) |
+| **Zeka** | Aptal (Sadece elektriği tekrarlar) | Akıllı (MAC adresini okur, header vb okur) |
+| **Duplex Modu** | **Half-Duplex** (Beklemeli) | **Full-Duplex** (Aynı anda) |
+| **Bant Genişliği** | Paylaşır (Yavaştır) | Her porta özeldir (Hızlıdır) |
+| **Collision** | **Sık Sık Olur** | **Olmaz** (Queue yani sıralama mantığı kullanır) |
+
+## Yol Kuralları: CSMA/CD
+
+Hub kullanılan ağlarda (Half-Duplex), herkes aynı anda konuşamaz. Peki kimin konuşacağına, kimin susacağına nasıl karar veriliyor?
+İşte bu sorunun cevabı: **CSMA/CD** algoritmasıdır.
+
+* **C**arrier **S**ense (Hattı Dinle)
+* **M**ultiple **A**ccess (Çoklu Erişim - Herkes hatta bağlı)
+* **C**ollision **D**etection (Çarpışmayı Tespit Et)
+
+### Adım Adım İşleyiş
+
+Bu algoritma, "kibar bir konuşma protokolü" gibidir. Sözünü kesmemek için önce dinlersin.
+
+1. **Adım 1 (Dinle / Carrier Sense):**
+
+* Gönderecek verisi olan cihaz önce hattı dinler.
+* Hat meşgul mü? (Biri konuşuyor mu?).
+* Evetse -> Bekle.
+* Hayırsa -> Adım 2'ye geç.
+
+2. **Adım 2 (Gönder):**
+
+* Hat boş olduğuna göre veriyi göndermeye başla.
+
+3. **Adım 3 (Collision Tespiti):**
+   
+* **Kritik Nokta:** Gönderirken dinlemeye devam et!
+* Neden? Çünkü seninle tam aynı mikrosaniyede başka biri de "Hat boş" sanıp veri göndermiş olabilir.
+
+* Eğer bir **Collision** tespit edilirse:
+
+* **A. Jamming Signal:** "Çarpışma oldu!" diye bağıran özel bir sinyal göndererek diğer herkesi uyar.
+* **B. Random Backoff:** Rastgele bir süre bekle. (Herkes aynı süre beklerse tekrar çarpışırlar, o yüzden süre rastgeledir).
+* **C. Tekrar Dene:** Süre dolunca tekrar Adım 1'e dön.
+
+### Hub ve Switch Bir Arada
+
+Hem Switch (Modern) hem Hub (Eski) içeren hibrit bir ağı görelim. Burada kurallara çok dikkat etmelisin.
+
+* **Switch-Switch Bağlantısı:** **Full-Duplex** (Modern, hızlı, çarpışma yok).
+* **Switch-Hub Bağlantısı:** **Half-Duplex** (Eski, yavaş).
+* Hub "aptal" olduğu için Duplex ayarı yoktur, sadece tekrarlar.
+* Ama Hub'a bağlı olan Switch portu (F0/2) ve PC'ler, Hub'a ayak uydurmak için kendilerini **Half-Duplex** moduna almak zorundadır.
+
+**[Ethernet LAN'da Full ve Half Duplex]**
+
+```text
+       [ PC A ] (Full)             [ PC B ] (Half)
+          |                           |
+          |                           |
+       [ SW1 ] ------------------- [ HUB ] ---------------- [ PC C ] (Half)
+       (Full)        (Half)           |
+          |                           | (Half-Duplex Bağlantı)
+          |  ----------------------- [ SW2 ]
+                     (Full)         (F0/2 Portu Half olmalıdır)
+
+```
+
 ---
 
+### Sınav Terimleri
+
+Sınavda şu iki terimi gördüğünde ne anlama geldiğini bilmelisin:
+
+#### 1. Ethernet Shared Media (Paylaşımlı Medya)
+
+* **Neyi Kasteder?** **Hub** kullanılan ağları.
+* **Neden "Shared"?** Çünkü bant genişliği ortaktır. Herkes aynı kabloyu (medyayı) paylaşır ve sırayla konuşmak zorundadır (CSMA/CD).
+* **Dezavantaj:** Biri konuşurken diğerleri susmak zorundadır.
+
+#### 2. Ethernet Point-to-Point 
+
+* **Neyi Kasteder?** **Switch** kullanılan ağları.
+* **Neden "Point-to-Point"?** Her kablo sadece iki cihaz (Switch-PC veya Switch-Switch) arasındadır.
+* **Avantaj:** Bant genişliği paylaşılmaz. Herkes kendi özel yolunda, **Full-Duplex** (aynı anda) konuşabilir. CSMA/CD gerekmez.
