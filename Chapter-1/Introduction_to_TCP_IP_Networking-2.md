@@ -982,3 +982,61 @@ Aşağıdaki tablo, bu üç teknolojinin karnesidir.
 1. **EMI:** Fabrikada büyük motorların yanından UTP geçirirsen, motorun manyetik alanı kablodaki veriyi bozar. Fiber **cam** olduğu için elektrikten/mıknatıstan etkilenmez. Fabrikalar için fiber şarttır.
 2. **Güvenlik:** Bakır kablodan geçen elektrik dışarıya çok hafif bir sinyal yayar. Kötü niyetli biri hassas cihazlarla kabloya dokunmadan veriyi çalabilir. Fiberde ise ışık camın içinde hapsolur, dışarı sızmaz. Bu yüzden askeriye ve devlet daireleri fiberi sever.
 
+---
+
+## Ethernet Frame Yapısı
+
+Şimdi tekrar buraya dönelim: Fiziksel bağlantı ne olursa olsun, Ethernet veriyi belirli bir kurala göre paketler. Bu pakete **Ethernet Frame** denir.
+
+Bir mektup gönderdiğini düşün:
+
+1. **Header:** Zarfın üzerindeki adres bilgileri.
+2. **Data:** Zarfın içindeki asıl mektup.
+3. **Trailer:** Zarfın arkasındaki mühür (Bütünlüğünü korumak için).
+
+### Frame Anatomisi
+
+Bu yapı, modern ağların temel taşıdır. Her bir byte'ın bir görevi vardır.
+
+**[Yaygın Olarak Kullanılan Ethernet Frame Formatı]**
+
+```text
+   Bytes:    (7)      (1)       (6)        (6)      (2)       (46 - 1500)      (4)
+          +-------+-------+-----------+----------+------+-------------------+------+
+          | Pre-  |  SFD  |   Dest.   |  Source  | Type |    DATA & PAD     | FCS  |
+          | amble |       |    MAC    |   MAC    |      |     (Packet)      |      |
+          +-------+-------+-----------+----------+------+-------------------+------+
+          <--- HEADER (Header Kısmı) ------------------->                   <-TRAILER->
+
+```
+
+### Alanların Görevleri
+
+Bu tabloyu adın gibi bilmelisin. Sınavda "FCS ne işe yarar?" veya "MTU nedir?" diye sorarlar.
+
+**[Ethernet Header ve Trailer Alanları]**
+
+| Alan | Bytes | Görevi |
+| --- | --- | --- |
+| **Preamble** (Önsöz) | 7 | **Hazırol:** Alıcıya "Hey, paket geliyor, senkronize ol!" diyen kısımdır. (101010... sinyali). |
+| **SFD** (Start Frame Delimiter) | 1 | **Başla:** "Tamam, ısınma bitti, asıl adres (MAC) şimdi başlıyor" uyarısıdır. |
+| **Destination MAC** | 6 | **Alıcı:** Bu paket kime gidiyor? (Örn: Irem'in Bilgisayarı). |
+| **Source MAC** | 6 | **Gönderici:** Bu paketi kim yolladı? (Örn: Berkay'ın Bilgisayarı). |
+| **Type** | 2 | **İçerik:** Kutunun içinde ne var? IPv4 mü, IPv6 mı? (Network katmanındaki protokolü belirtir). |
+| **Data and Pad** | 46 - 1500 | **Yük (yani Payload):** Asıl taşınan veri (IP Paketi). <br>
+
+<br> *Not:* Eğer veri çok küçükse (46 byte'tan az), boşluk doldurmak için **Padding (Dolgu)** eklenir. |
+| **FCS** (Frame Check Sequence) | 4 | **Kontrol:** Paket yolda bozuldu mu? Alıcı buradaki matematiksel hesaba bakar. Tutmazsa paketi çöpe atar. |
+
+### MTU (Maksimum Taşıma Birimi)
+
+Burada çok kritik bir kavram var: **MTU (Maximum Transmission Unit).**
+
+Tabloya dikkat edersen **Data** alanı en fazla **1500 Byte** olabilir diyor.
+
+* Yani Ethernet diyor ki: "Kardeşim, benim kamyonum (Frame) en fazla 1500 byte'lık yük (IP Paketi) taşıyabilir."
+* İşte bu 1500 sınırına **MTU** denir.
+* **Minimum sınır** ise 46 byte'tır. Eğer mektubun çok kısaysa, Ethernet onu 46'ya tamamlamak için yanına boş kağıtlar (Padding) koyar.
+
+İnternette bazen "sayfa açılmıyor" sorunları yaşanır ya, işte o bazen bu MTU ayarının yanlış yapılmasından kaynaklanır. Paket 1500'den büyükse, Router onu parçalamak zorunda kalır veya çöpe atar.
+
