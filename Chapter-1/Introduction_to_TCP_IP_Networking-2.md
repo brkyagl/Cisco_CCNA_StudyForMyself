@@ -1164,3 +1164,64 @@ Bu tabloyu zihnine kazıman lazım, özellikle adres türleri arasındaki farkı
 | **Broadcast Address** | **Tüm** cihazları temsil eder. (`FFFF.FFFF.FFFF`). |
 | **Multicast Address** | **Bir grup** cihazı temsil eder. |
 
+---
+
+## Ethernet Type Nedir?
+
+Ethernet Frame'inin Header'ında yer alan **Type** (veya **EtherType**) alanı, Router'lar ve bilgisayarlar için hayati öneme sahiptir.
+
+### 1. Sorun Nedir?
+
+Bir mektup aldığını düşün (Frame). Zarfı açtın, içinden bir kağıt çıktı (Packet). Ama kağıt hangi dilde yazılmış? İngilizce mi? Almanca mı? Eğer dilini bilmezsen okuyamazsın.
+
+Bilgisayar için de durum aynıdır:
+
+* Ethernet Frame'i, veriyi taşır.
+* Bu veri genelde bir **Network Layer (L3PDU)** paketidir.
+* Eskiden AppleTalk, IPX/SPX gibi protokoller vardı. Bugün ise iki dev var: **IPv4** ve **IPv6**.
+
+### EtherType Çözümü
+
+Gönderici cihaz, Frame'i oluştururken **Type** alanına özel bir **Hexadecimal (16'lık)** sayı yazar. Bu sayı, alıcıya "Kutunun içinde şu var" der.
+
+Alıcı (Router veya PC) bu koda bakar:
+
+* "Hımm, kod **0800**. Demek ki içerdeki paket **IPv4**. Bunu IPv4 işlemcisine göndereyim."
+* "Hımm, kod **86DD**. Demek ki içerdeki paket **IPv6**. Bunu IPv6 işlemcisine göndereyim."
+
+### Kritik EtherType Değerleri
+
+IEEE, bu kodların listesini yönetir. Sınavda ve gerçek hayatta bilmen gereken iki temel değer vardır:
+
+| EtherType (Hex) | Protokol (Payload) | Anlamı |
+| --- | --- | --- |
+| **0x0800** | **IPv4** | Paketin içinde IPv4 verisi var. |
+| **0x86DD** | **IPv6** | Paketin içinde IPv6 verisi var. |
+| **0x0806** | **ARP** | (Ekstra Bilgi) Paketin içinde ARP verisi var. |
+
+### Çalışma Mantığı
+
+Aşağıdaki örnekte bir Switch'in (SW1) Router'a (R1) iki farklı paket gönderdiğini görüyoruz. Biri eski nesil (IPv4), diğeri yeni nesil (IPv6). Router, paketleri açmadan önce **Type** alanına bakarak onları ayırt eder.
+
+**[Ethernet Type Alanının Kullanımı]**
+
+```text
+       Gönderen (SW1)                               Alıcı (R1) 
+      --------------------                      ----------------------
+      
+      Frame 1: (IPv4 İçeriyor)
+      +--------------+------------+--------------+-----------+
+      | Eth Header   | Type: 0800 |  IPv4 Packet | Trailer   |  -----> R1 (IPv4 olarak işlem)
+      +--------------+------------+--------------+-----------+
+      
+      Frame 2: (IPv6 İçeriyor)
+      +--------------+------------+--------------+-----------+
+      | Eth Header   | Type: 86DD |  IPv6 Packet | Trailer   |  -----> R1 (IPv6 olarak işlem)
+      +--------------+------------+--------------+-----------+
+
+```
+
+Eğer Type alanı olmasaydı, Router paketin içeriğini tahmin etmek zorunda kalırdı ve işlemci boşuna yorulurdu. EtherType sayesinde Router, paketin kapağını bile açmadan "Bu IPv6, sağ tarafa; bu IPv4, sol tarafa" diyerek trafiği çok hızlı işler.
+
+---
+
