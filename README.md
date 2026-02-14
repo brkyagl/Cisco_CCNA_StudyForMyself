@@ -12,6 +12,7 @@ Bu repository, Wendell Odom'un **Official Cert Guide** müfredatına sadık kala
 - [ ] [**Bölüm 1:** TCP/IP Networking Kavramlarına Giriş](./Chapter-1/Introduction_to_TCP_IP_Networking.md)
   >  [**PDF :** TCP/IP Networking Kavramlarına Giriş (24. Sayfa)](./Chapter-1/Introduction_to_TCP_IP_Networking.pdf) 
 - [ ] [**Bölüm 2:** Ethernet LAN Temelleri](./Chapter-1/Introduction_to_TCP_IP_Networking-2.md)
+  >  [**PDF :** Ethernet LAN Temelleri (26. Sayfa)](./Chapter-1/Introduction_to_TCP_IP_Networking-2.pdf)
 - [ ] **Bölüm 3:** WAN Temelleri ve IP Routing Kavramları
 
 ### 🔹 Bölüm 2: Ethernet LAN Uygulamaları (Implementing Ethernet LANs)
