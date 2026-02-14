@@ -1023,9 +1023,7 @@ Bu tabloyu adın gibi bilmelisin. Sınavda "FCS ne işe yarar?" veya "MTU nedir?
 | **Destination MAC** | 6 | **Alıcı:** Bu paket kime gidiyor? (Örn: Irem'in Bilgisayarı). |
 | **Source MAC** | 6 | **Gönderici:** Bu paketi kim yolladı? (Örn: Berkay'ın Bilgisayarı). |
 | **Type** | 2 | **İçerik:** Kutunun içinde ne var? IPv4 mü, IPv6 mı? (Network katmanındaki protokolü belirtir). |
-| **Data and Pad** | 46 - 1500 | **Yük (yani Payload):** Asıl taşınan veri (IP Paketi). <br>
-
-<br> *Not:* Eğer veri çok küçükse (46 byte'tan az), boşluk doldurmak için **Padding (Dolgu)** eklenir. |
+| **Data and Pad** | 46 - 1500 | **Yük (yani Payload):** Asıl taşınan veri (IP Paketi). <br> <br> *Not:* Eğer veri çok küçükse (46 byte'tan az), boşluk doldurmak için **Padding (Dolgu)** eklenir. |
 | **FCS** (Frame Check Sequence) | 4 | **Kontrol:** Paket yolda bozuldu mu? Alıcı buradaki matematiksel hesaba bakar. Tutmazsa paketi çöpe atar. |
 
 ### MTU (Maksimum Taşıma Birimi)
