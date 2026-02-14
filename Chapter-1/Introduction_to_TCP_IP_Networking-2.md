@@ -1038,3 +1038,129 @@ Tabloya dikkat edersen **Data** alanı en fazla **1500 Byte** olabilir diyor.
 
 İnternette bazen "sayfa açılmıyor" sorunları yaşanır ya, işte o bazen bu MTU ayarının yanlış yapılmasından kaynaklanır. Paket 1500'den büyükse, Router onu parçalamak zorunda kalır veya çöpe atar.
 
+## Ethernet Adresleme (MAC Adresleri)
+
+Ethernet ağında haberleşmenin temeli adreslemeye dayanır. Gönderici, paketin içine kendi adresini (Source) ve alıcının (Destination) adresini yazar.
+
+### 1. MAC Nedir?
+
+* **Tam Adı:** **M**edia **A**ccess **C**ontrol Address.
+* **Boyutu:** **6 Byte** uzunluğundadır.
+* 1 Byte = 8 Bit olduğu için, toplamda **48 Bit**'tir.
+
+Bilgisayarlar bu adresleri **Hexadecimal** (16'lık taban) olarak yazar. Toplam 12 haneli bir sayıdır. Örnek yazım şekli: `00-00-0C-12-34-56`
+Lakin Cisco cihazlar okumayı kolaylaştırmak için 4'erli gruplar ve noktalar kullanır: `0000.0C12.3456`
+
+### 2. Unicast Adres
+
+Çoğu zaman gördüğümüz MAC adresleri **Unicast**'tir.
+
+* **Tanım:** Tek bir ağ arayüzünü (NIC) temsil eder.
+* **Mantık:** "Bu mektup sadece Berkay'a gitsin" demektir.
+
+Bu arada bu terimi **Broadcast** ve **Multicast** ile karıştırma, onları sonra göreceğiz.
+
+### 3. Uniqueness İlkesi
+
+Ethernet'in çalışması için her cihazın adresinin **Evrensel Olarak Benzersiz** olması şarttır.
+Eğer senin evinle benim evimin adresi birebir aynı olsaydı, postacı mektubu kime bırakacağını bilemezdi. Ağda da iki cihaz aynı MAC adresine sahip olursa çatışma çıkar ve iletişim çöker.
+
+### MAC Adresinin Mimarisi
+
+Peki, dünyadaki milyarlarca cihazın aynı adresi almadığından nasıl emin oluyoruz? Cevap: **IEEE ve OUI Sistemi.**
+
+MAC adresi rastgele verilmez, 48 bitlik yapı tam ortadan ikiye bölünmüştür:
+
+**[MAC Addresi Mimarisi]**
+
+```text
+      Toplam Boyut: 48 Bit (6 Byte) / 12 Hex Digits
+      
+      |           İlk 24 Bits (3 Bytes)             |           Son 24 Bits (3 Bytes)             |
+      |---------------------------------------------|---------------------------------------------|
+      |                   O U I                     |              Vendor Assigned                |
+      |     (Organizationally Unique Identifier)    |             (Üreticiye Özel)                |
+      |---------------------------------------------|---------------------------------------------|
+      |             Kim yaptı?                      |             Hangi birim bu?                 |
+      |                                             |              (Seri Numarası)                |
+
+```
+
+1. **OUI (İlk 3 Byte):**
+* Üretici (Cisco, Apple, Dell vs.) cihaz üretmeden önce **IEEE**'ye başvurur.
+* IEEE onlara benzersiz bir kod (OUI) verir.
+* *Örnek:* `00:00:0C` Cisco'ya aittir. Bu kodla başlayan her şey Cisco cihazıdır.
+
+2. **Vendor Assigned (Son 3 Byte):**
+* Üretici, kendine ayrılan bu alanı, ürettiği her karta farklı bir numara vererek doldurur.
+* Böylece dünyada eşi benzeri olmayan bir **Global MAC Address** oluşur.
+
+Sınavda sana bir MAC adresi verip "Bunun üreticisi kim?" diye sormazlar (ezberleyemezsin doğal olarak). Ama "MAC adresinin ilk 24 biti neyi ifade eder?" diye sorarlar. Cevap: **OUI (Üretici Kimliği)**.
+
+### MAC Adresi Yapısı 
+
+Bir MAC adresini ortadan ikiye böldüğümüzde ne görüyorduk? İlk yarısı üreticinin kimliği, ikinci yarısı cihazın seri numarası.
+
+**[İkinci Örnek]**
+
+```text
+      Toplam: 48 Bits (6 Bytes) / 12 Hex Digits
+      
+      | <--------- 24 Bits ---------> | <--------- 24 Bits ---------> |
+      |         (3 Bytes)             |          (3 Bytes)            |
+      |                               |                               |
+      |            O U I              |       Vendor Assigned         |
+      | (Organizationally Unique ID)  |    (NIC Cards, Interfaces)    |
+      |_______________________________|_______________________________|
+      
+      Örnek   00 60 2F                |           3A 07 BC
+
+```
+
+* **OUI (İlk 24 Bit):** IEEE tarafından üreticiye (Cisco, Apple vs.) verilir.
+* **Vendor Assigned (Son 24 Bit):** Üretici tarafından o karta özel verilir.
+
+### Çok İsimli Kahraman
+
+Sınavda kafanı karıştırmak için MAC adresi yerine başka isimler kullanabilirler. Hepsi **aynı kapıya çıkar**:
+
+1. **LAN Address:** Yerel ağ adresi.
+2. **Ethernet Address:** Ethernet teknolojisinin adresi.
+3. **Hardware Address:** Donanıma ait olduğu için.
+4. **Physical Address:** Yazılımla değil, fiziksel kartla geldiği için.
+5. **BIA (Burned-In Address):** Bu terim çok daha ilginç. Adres, üretim sırasında NIC kartının üzerindeki ROM çipine lazerle yakılarak (burned-in) yazılmıştır. Yani kalıcıdır, bir dövme gibidir.
+6. **Universal Address:** Evrensel olarak benzersiz olduğu için.
+
+Bu arada işletim sisteminde (Windows/Linux) MAC adresini "değiştirebilirsin". Ancak bu sadece yazılımsal bir maske gibidir. Kartın üzerindeki gerçek adres asla değişmez.
+
+### Broadcast ve Multicast
+
+Şimdiye kadar hep "Berkay'dan Irem'e" dedik. Ama bazen herkese veya bir gruba seslenmek gerekir.
+
+#### 1. Broadcast Address (Yayın Adresi - Herkese!)
+
+* **Amaç:** Ağdaki **tüm** cihazlara aynı paketi göndermek.
+* **Adres:** `FFFF.FFFF.FFFF` (Tüm bitler 1).
+
+Bir odada eline megafon alıp "Herkes beni dinlesin!" diye bağırmak gibidir.
+
+#### 2. Multicast Address (Çoklu Gönderim - Gruba)
+
+* **Amaç:** Ağdaki **belirli bir alt kümeye** paket göndermek.
+* **Adres:** Özel tanımlanmış aralıklar.
+* **Mantık:** Sadece "Gönüllü" olanlar bu paketi alır.
+
+Bir odada sadece "Futbol sevenler el kaldırsın" deyip, sadece onlara maç sonucu söylemek gibidir.
+
+### Özet Tablo 
+
+Bu tabloyu zihnine kazıman lazım, özellikle adres türleri arasındaki farkı.
+
+| Terim | Anlamı |
+| --- | --- |
+| **MAC** | Media Access Control. 802.3 Ethernet'in alt katmanı. |
+| **BIA (Burned-In Address)** | Üretici tarafından karta kazınmış 6-byte'lık adres. |
+| **Unicast Address** | **Tek** bir arayüzü temsil eder. (Örn: Senin PC). |
+| **Broadcast Address** | **Tüm** cihazları temsil eder. (`FFFF.FFFF.FFFF`). |
+| **Multicast Address** | **Bir grup** cihazı temsil eder. |
+
