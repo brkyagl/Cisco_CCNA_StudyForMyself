@@ -1225,3 +1225,99 @@ Eğer Type alanı olmasaydı, Router paketin içeriğini tahmin etmek zorunda ka
 
 ---
 
+## FCS Hata Tespiti
+
+Ethernet kablolarından geçen sinyaller (bitler), bazen dış etkenler yüzünden bozulabilir.
+
+* **Neden Bozulur?** Elektriksel gürültü (EMI), kötü kablo veya arızalı bir NIC (Network Interface Card) yüzünden `1` olan bit `0` olabilir.
+* **Çözüm:** Ethernet, paketin yolda değişip değişmediğini anlamak için **Trailer** kısmındaki **FCS (Frame Check Sequence)** alanını kullanır.
+
+### Matematiksel Kontrol
+
+Bu işlem aslında bir checksum mantığıdır.
+
+1. **Gönderici:** Paketi göndermeden önce karmaşık bir matematiksel formül çalıştırır. Çıkan sonucu paketin en arkasındaki **FCS** alanına yazar ve paketi yollar.
+2. **Alıcı:** Paketi alır ve **aynı formülü** tekrar çalıştırır.
+
+Eğer Alıcının bulduğu sonuç = Pakette yazan FCS ise -> **Paket Sağlamdır.** (Kabul et).
+Eğer sonuçlar tutmazsa -> **Paket Bozuktur.** (Hata var).
+
+### Tespit Etmek vs. Kurtarmak
+
+Burası sınavın en büyük tuzaklarından birisi.
+
+* **Ethernet Hatayı Bulur:** Evet. FCS tutmazsa hatayı anlar.
+* **Ethernet Hatayı Düzeltir mi:** **HAYIR!**
+* Ethernet bozuk paketi gördüğü an **Discard** eder. Yani çöpe atar.
+* Göndericiye "Bunu tekrar yolla" demez.
+
+Peki kaybolan veri ne olacak? Ethernet buna karışmaz. Daha üst katmandaki **TCP (L4PDU)** protokolü, paketin gitmediğini fark eder ve tekrar gönderilmesini sağlar. Ethernet sadece taşıyıcıdır, yükü düşürürse arkasına bakmaz.
+
+---
+
+## Switchler ve Hub'lar ile Ethernet Frame'leri Gönderme
+
+Ethernet ağları, kullanılan cihazın türüne göre (Modern Switch mi, Eski Hub mı?) farklı davranır.
+
+* **Modern Cihazlar (Switchler):** **Full-Duplex** (Tam Çift Yönlü) mantığını kullanır. Daha hızlı ve basittir.
+* **Eski Cihazlar (Hublar):** **Half-Duplex** (Yarı Çift Yönlü) mantığını kullanır. Daha yavaş ve kısıtlıdır.
+
+### 1. Modern Ethernet LAN'larda Gönderme (Full Duplex)
+
+Modern ağlarda Switch'ler kullanılır. Fiziksel kablo tipi veya hızı (10 Mbps, 1000 Mbps vs.) değişse de, temel işlem basittir: Her bağlantı, veriyi bir sonrakine devreder.
+
+**[Modern Ethernet LAN'da Veri Gönderme Örneği]**
+
+Bu örnekte PC1'den çıkan bir verinin, Switch'ler üzerinden geçerek PC2'ye ulaşmasını izleyeceğiz.
+
+```text
+     Bağlantı 1        Bağlantı 2 (Backbone)      Bağlantı 3
+     (10BASE-T)         (1000BASE-T / Gig)        (100BASE-T)
+      [FULL]                 [FULL]                 [FULL]
+        |                      |                      |
+      [PC1] ---------------- [SW1] ---------------- [SW2] ---------------- [PC2]
+    (Source)               (Int G0/1)             (Int F0/2)              (Dest)
+
+```
+
+**Adım Adım Yolculuk:**
+
+1. **PC1 Hazırlar:** PC1, Ethernet Frame'ini oluşturur.
+* **Source MAC:** Kendi MAC adresi (PC1).
+* **Dest MAC:** PC2'nin MAC adresi.
+* Paketi yola çıkarır.
+
+2. **SW1 İletir:** Switch 1 paketi alır. Hedefe gitmesi için onu **G0/1** (Gigabit Ethernet 0/1) portundan SW2'ye iletir.
+3. **SW2 İletir:** Switch 2 paketi alır. PC2'nin **F0/2** (Fast Ethernet 0/2) portunda olduğunu bilir ve oraya iletir.
+4. **PC2 Alır:** PC2 paketi yakalar. "Aaa, Destination MAC benim adresim!" der ve paketi işler.
+
+### Full Duplex vs. Half Duplex
+
+Örnekte her bağlantının altında **"Full"** yazdığına dikkat et. Modern ağların sırrı budur.
+
+Bu kavramları su gibi bilmelisin:
+
+#### A. Half-Duplex (Telsiz Mantığı)
+
+Eski Hub'ların kullandığı yöntemdir.
+
+* **Kural:** Bir cihaz veri alıyorsa, aynı anda veri gönderemez.
+* **Durum:** "Konuşmak için dinlemenin bitmesini bekle."
+* **Kısıtlama:** Hem konuşup hem dinleyemezsin.
+
+#### B. Full-Duplex (Telefon Mantığı)
+
+Switch'lerin ve PC'lerin kullandığı modern yöntemdir.
+
+* **Kural:** Cihaz **beklemek zorunda değildir.**
+* **Durum:** Aynı saniyede hem veri gönderebilir hem de veri alabilir.
+* **Avantaj:** PC1 ve PC2, hiç bekleme yapmadan birbirlerine aynı anda dosya gönderebilirler.
+
+Örnekteki **G0/1** (Gigabit) ve **F0/2** (Fast Ethernet) terimleri Cisco cihazlardaki port isimlendirmesidir.
+
+> * **Fa veya F:** Fast Ethernet (100 Mbps)
+> * **Gi veya G:** Gigabit Ethernet (1000 Mbps)
+> Sınavda arayüz isimlerine bakarak hızı tahmin etmek gerekebilir.
+
+---
+
