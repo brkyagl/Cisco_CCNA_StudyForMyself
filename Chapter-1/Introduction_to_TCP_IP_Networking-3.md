@@ -159,3 +159,73 @@ Bu olayu şöyle canlandırabiliriz:
 Arada onlarca Switch ve kilometrelerce kablo olsa da, Router R1 ve Router R2 bunu bilmez. Onlar sadece **"Karşıda R2 var"** sanır.
 Bu arada **CCNA için:** şu senaryodaki olayın derin detayına takılma. **Serial Link = İki Router arası düz çizgi.** Gerisi Telekomcunun derdi. 
 
+## HDLC Data-Link Detayları (Leased Lines Layer 2)
+
+Kiralık hatlar (Layer 1), bitleri taşımaya söz verir. Ama bu bitlerin anlamlı bir Frame'e dönüşmesi için bir **Layer 2 Protokolü** şarttır.
+
+2 tane ana WAN protokolü vardır:
+
+1. **HDLC** (High-Level Data Link Control) -> Cisco Router'larda varsayılan.
+2. **PPP** (Point-to-Point Protocol) -> Daha esnek, marka bağımsız.
+
+### Ethernet vs. HDLC 
+
+* **Ethernet (Kalabalık Parti):**
+* Aynı ortamda (LAN) onlarca cihaz var.
+* Konuşurken kime konuştuğunu belirtmek zorundasın ("Hey Berkay!").
+* Bu yüzden **Destination MAC Address** çok önemlidir.
+
+* **HDLC (Özel Oda):**
+* Hattın bir ucunda sen, diğer ucunda sadece Berkay (Diğer Router) var.
+* Konuştuğun an, Berkay seni dinlemek zorunda. Başka kimse yok.
+* Bu yüzden **Adres** alanı olsa bile önemsizdir.
+
+### HDLC Frame 
+
+HDLC, tıpkı Ethernet gibi bir Frame kullanır. Header'ı, Data'sı ve Trailer/FCS'si vardır.
+
+Ancak Ethernet kadar karmaşık değildir. Çünkü **Point-to-Point (Noktadan Noktaya)** çalıştığı için, "Bu paket kime gidiyor?" diye düşünmesine gerek yoktur. Yolun sonu bellidir.
+Sınavda şu soruyu sorabilirler: "HDLC frame'inde Destination Address alanı var mıdır?"
+Cevap: **Evet, vardır.** Ama Ethernet'teki gibi karmaşık bir işlevi yoktur, çünkü hat zaten tek yönlüdür.
+
+### HDLC Header Alanlarını Ethernet ile Karşılaştırma 
+
+HDLC'yi sıfırdan ezberlemeye gerek yok. Zaten Ethernet'i biliyoruz, onunla eşleştirirsek taşlar yerine oturur.
+
+| HDLC Field | Ethernet Karşılığı | Görevi |
+| --- | --- | --- |
+| **Flag** | Preamble / SFD | **Bayrak.** "Dikkat paket geliyor!" uyarısıdır. Özel bir bit deseni (01111110) taşır. |
+| **Address** | Destination MAC | **Adres.** Hedef cihazı belirtir. (Ama WAN'da tek hedef olduğu için genelde semboliktir). |
+| **Control** | - (Yok) | **Kontrol.** Eski teknolojiler için yönetim bilgisidir. Günümüzde pek işlevi kalmamıştır. |
+| **Type** | EtherType | **Tür.** İçerideki paketin ne olduğunu (IPv4 mü IPv6 mı?) söyler. **(Buraya Dikkat!)** |
+| **FCS** | FCS | **Hata Kontrolü.** Paketin bozulup bozulmadığını denetler. |
+
+### Cisco'ya Özel HDLC
+
+İşte sınavın altın vuruşu burası.
+
+1. **ISO Standard HDLC:** Uluslararası standart olan HDLC'de **"Type" alanı YOKTUR.**
+* *Sorun:* Type alanı yoksa, Router gelen paketin IPv4 mü yoksa IPv6 mı olduğunu anlayamaz.
+
+2. **Cisco Tescilli HDLC:** Cisco mühendisleri bu sorunu fark etmiş ve standardı bozarak araya kendi **Type** alanlarını eklemişlerdir.
+* *Çözüm:* Artık Router, paketin içeriğini (yani Protocol türünü) anlayabilir.
+
+**[Cisco HDLC Frame Formatı]**
+
+Cisco'nun modifiye ettiği o yapıyı şöyle görebiliriz:
+
+```text
+       Bytes:  (1)      (1)       (1)       (2)        (Variable)       (2)    
+             +------+---------+---------+----------+------------------+-------+
+             | Flag | Address | Control |   TYPE   |       Data       |  FCS  |
+             +------+---------+---------+----------+------------------+-------+
+                                             ^
+                                             |
+                                     (CISCO'NUN EKLEDİĞİ!)
+                                    (Standart ISO HDLC'de Yok)
+
+```
+
+Eğer bir uçta **Cisco Router**, diğer uçta **Başka Marka Router** varsa ve ikisinde de HDLC protokolünü kullanırsan **BAĞLANTI ÇALIŞMAZ.** Çünkü Cisco "Type" alanı beklerken, diğer marka beklemez. Dilleri uyuşmaz. 
+Farklı markaları bağlayacaksan HDLC yerine **PPP (Point-to-Point Protocol)** kullanmalısın.
+ 
