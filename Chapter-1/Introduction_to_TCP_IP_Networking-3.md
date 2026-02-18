@@ -229,3 +229,106 @@ Cisco'nun modifiye ettiği o yapıyı şöyle görebiliriz:
 Eğer bir uçta **Cisco Router**, diğer uçta **Başka Marka Router** varsa ve ikisinde de HDLC protokolünü kullanırsan **BAĞLANTI ÇALIŞMAZ.** Çünkü Cisco "Type" alanı beklerken, diğer marka beklemez. Dilleri uyuşmaz. 
 Farklı markaları bağlayacaksan HDLC yerine **PPP (Point-to-Point Protocol)** kullanmalısın.
  
+## Router'ın Yol Haritası
+
+Şöyle diyelim önce Router'lar **Network Layer (Layer 3)** cihazlarıdır. Tek dertleri paketi nihai hedefe ulaştırmaktır.
+Ancak Router'lar bu paketi ışınlayamazlar. Paketi bir sonraki durağa atmak için **Data Link (Layer 2)** teknolojilerini (LAN veya WAN) kullanmak zorundadırlar.
+
+### Router'ın Mantığı
+
+Aşağıda, bir paketin PC1'den çıkıp PC2'ye giderken geçtiği 3 aşamalı düşünce yapısını gösterir.
+
+**[LAN ve WAN üzerinden IP Yönlendirme Mantığı]**
+
+```text
+       Adım 1 (LAN)                 Adım 2 (WAN - Kiralık Hat)           Adım 3 (LAN)
+      Ethernet Frame                     HDLC Frame                     Ethernet Frame
+     +--------------+                 +--------------+                 +--------------+
+     | [PC 1]       |                 |    [R1]      |                 |    [R2]      |-------------------> [PC 2]
+     +------+-------+                 +------+-------+                 +------+-------+
+            |                                |                                |
+            | "Hedef PC2."                   | "Hedef PC2."                   | "Hedef PC2."
+            | "R1'e yolla."                  | "R2'ye yolla."                 | "PC2'ye yolla."
+            v                                v                                v
+          (R1'e)                          (R2'ye)                          (PC2'ye)
+
+```
+
+1. **PC1'in Mantığı (Adım 1):**
+* **Hedef:** PC2'nin IP adresi.
+* **Karar:** "PC2 uzakta (başka bir ağda). O zaman paketi benim kapımdaki nöbetçiye, yani **Default Gateway (R1)**'e göndermeliyim."
+* **Eylem:** Paketi Ethernet ile R1'e atar.
+
+2. **R1'in Mantığı (Adım 2 - WAN Kısmı):**
+* **Hedef:** Yine PC2.
+* **Karar:** R1 haritasına (Routing Table) bakar. "PC2'ye gitmek için bu paketi WAN hattından **R2**'ye fırlatmam lazım."
+* **Eylem:** Paketi **HDLC** veya **PPP** ile paketleyip WAN hattından R2'ye yollar.
+
+3. **R2'nin Mantığı (Adım 3):**
+* **Hedef:** PC2.
+* **Karar:** R2 haritasına bakar. "Aaa, PC2 zaten benim bacağımdaki yerel ağda (LAN) oturuyor."
+* **Eylem:** Paketi Ethernet ile doğrudan **PC2**'ye teslim eder.
+
+### Paketleme Olayları
+
+Burada çok önemli bir detay gizli:
+
+* **PC1 -> R1:** Arada **Ethernet** var. Paket Ethernet kutusuna konur.
+* **R1 -> R2:** Arada **WAN (HDLC)** var. R1, Ethernet kutusunu çöpe atar, paketi **HDLC** kutusuna koyar.
+* **R2 -> PC2:** Arada tekrar **Ethernet** var. R2, HDLC kutusunu çöpe atar, paketi yeni bir **Ethernet** kutusuna koyar.
+
+IP Paketi (Mektup) yol boyunca **ASLA DEĞİŞMEZ.**
+Ancak onu taşıyan Data Link Frame (Zarf/Kutu) her durakta değişir (Ethernet -> HDLC -> Ethernet).
+Burası çok önemli gerçekten: **IP Paketi (Mektup) yol boyunca asla değişmez. Ancak onu taşıyan Çerçeve (Zarf) her durakta değişir.**
+
+Bunu bir seyahat gibi düşün:
+
+1. Evden taksiyle (Ethernet) havaalanına gidersin.
+2. Uçakla (HDLC) başka şehre gidersin.
+3. Orada tekrar taksiye (Ethernet) binip otele gidersin.
+*Sen (IP Paketi) aynısın, ama bindiğin araç (Frame) sürekli değişiyor.*
+
+### Adım Adım Yolculuk
+
+Örnek, PC1'den PC2'ye giden paketin başından geçenler:
+
+**1. Hop 1: PC1'den Router 1'e (LAN)**
+
+* **Ortam:** Ethernet (LAN).
+* **İşlem:** PC1, IP Paketini bir **Ethernet Frame**'inin içine koyar (Encapsulation).
+* **Adres:** Hedef MAC adresi R1'dir.
+* **Paket:** `[Eth Head] [IP Packet] [Eth Trail]`
+
+**2. Hop 2: Router 1'den Router 2'ye (WAN)**
+
+* **Ortam:** Leased Line (Kiralık - WAN).
+* **İşlem (R1):**
+* Gelen Ethernet header/trail söker atar (**De-encapsulation**).
+* Çıplak kalan IP Paketini alır.
+* Onu WAN hattına uygun olan **HDLC Frame**'inin içine koyar (**Re-encapsulation**).
+* **Paket:** `[HDLC Head] [IP Packet] [HDLC Trail]`
+
+**3. Hop 3: Router 2'den PC2'ye (LAN)**
+
+* **Ortam:** Ethernet (LAN).
+* **İşlem (R2):**
+* Gelen HDLC header/trail söker atar (**De-encapsulation**).
+* Çıplak kalan IP Paketini alır.
+* Onu PC2'ye göndermek için yeni bir **Ethernet Frame**'inin içine koyar (**Re-encapsulation**).
+* **Adres:** Hedef MAC adresi PC2'dir.
+* **Paket:** `[Eth Head] [IP Packet] [Eth Trail]`
+
+Router'lar her durakta Layer 2 (Data Link) headerını çöpe atar ve yenisini yazar. Ama Layer 3 (Network - IP) headerına dokunmazlar (bazı özel durumlar haricinde böyleymiş). Bu yüzden "IP End-to-End" deriz.
+
+### Leased Lines: Karnesi 
+
+Bu mevzuyu kapatırken, neden yıllarca Leased Line kullandık?
+
+| Avantajları | Dezavantajları |
+| --- | --- |
+| **Basit:** Point-to-Point olduğu için karmaşık değildir. | **Maliyet:** Çok pahalıdır. Hattı 7/24 kiraladığın için kullanmasan da para ödersin. |
+| **Bulunabilirlik:** Dünyanın her yerinde Telco altyapısı vardır. | **Yavaş:** Modern standartlara göre yavaştır (Genelde Mbps seviyesinde kalır). |
+| **Özel:** Hat sana özeldir, güvenlik riski düşüktür. | **Kurulum Süresi:** Hattın çekilmesi haftalar/aylar sürebilir. |
+| **Kalite:** Hattın kalitesi yüksektir, bant genişliği garantilidir. |  |
+
+---
