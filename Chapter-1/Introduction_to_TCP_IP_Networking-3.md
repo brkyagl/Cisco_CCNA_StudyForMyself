@@ -697,7 +697,7 @@ CCNA çalışırken kelimelerin tam olarak ne anlama geldiğini bilmek hayat kur
 > * **Internetwork (İnternet Ağı):** Router'ların, Switch'lerin, kabloların ve cihazların birbirine bağlanmasıyla oluşan o devasa **fiziksel sistemin** tamamına verilen isimdir.
 > *Kısacası:* Kablolara ve Switch'lere bakarken "Internetwork", IP adreslerine bakarken "IP Network" kelimesini kullanacağız ki kafalar karışmasın!
 
-## IP Adres Grupları için Kurallar (Networks and Subnets)
+## IP Adres Grupları için Kurallar (Networks ve Subnets)
 
 TCP/IP, aynı fiziksel ağda (örneğin aynı Switch'e bağlı) bulunan cihazların IP adreslerini bir **Grup** halinde toplar. Bu gruplara **IP Network** veya **IP Subnet** diyoruz bunu unutmayalım.
 
