@@ -822,3 +822,164 @@ Bazen bir Router aynı hedefe giden birden fazla yol öğrenebilir. Bu durumda R
 
 ---
 
+## Diğer Ağ Katmanı Özellikleri
+
+TCP/IP Network Layer dendiğinde akla ilk olarak IP (Internet Protocol) ve onun adresleme/yönlendirme kuralları gelir. IP kesinlikle bu katmanın başrol oyuncusudur. Ancak bu devasa sahnede yalnız değildir!
+
+* **RFC (Request For Comments):** İnternet dünyasındaki kuralların ve protokollerin yazılı olduğu resmi belgelere RFC denir. IP bir RFC'de tanımlanırken, örneğin bir önceki konuda bahsettiğimiz **OSPF (Open Shortest Path First)** routing protokolü tamamen ayrı bir RFC'de tanımlanmıştır.
+* **Yardımcı Aktörler:** Network Layer'in kusursuz çalışması için IP'ye destek olan başka protokoller ve araçlar da vardır.
+
+### Eksik Parçalar
+
+Taşların tam olarak yerine oturması ve "Bu cihaz bunu nasıl buldu ya?" dememen için, bu 3. bölümün sonunda şu 3 kritik konuyu işleyeceğiz:
+
+1. **DNS (Domain Name System):** İsimleri (örn: [www.google.com](https://www.google.com)) IP adreslerine çeviren devasa internet rehberimiz.
+2. **ARP (Address Resolution Protocol):** IP adreslerini MAC adreslerine çeviren (az önce R3'ün PC2'yi bulurken kullandığı) dedektifimiz.
+3. **Ping:** "Karşıdaki cihaz hayatta mı, bana cevap verebiliyor mu?" diye test etmemizi sağlayan radarımız.
+
+## Domain Name System (DNS)
+
+TCP/IP, kullanıcıları IP adresi ezberleme derdinden kurtarmak için **Hostname (Makine Adı/Domain)** kullanmamıza olanak tanır. Sen tarayıcıya `www.google.com` yazdığında, arka planda protokoller bu ismin IP adresini dinamik olarak keşfeder. Bu işleme **Name Resolution (İsim Çözümleme)** denir.
+
+### Basit bir DNS Name Resolution İsteği 
+
+Aşağıdaki örnekte, sol taraftaki bilgisayarın (PC11), ağdaki `Server1` isimli cihaza bağlanmak istediği o 3 adımlık klasik senaryoyu görüyoruz:
+
+**[DNS Name Resolution]**
+
+```text
+       [ PC11 ]                                               [ DNS Server ]
+          |                                                   (Name Database)
+          |                                                 +---------+----------+
+          |-----(Adım 1: DNS Query)------------------------>| Name    | Address  |
+          |     "Server1'in IP adresi nedir?"               +---------+----------+
+          |                                                 | Server1 | 10.1.2.3 |
+          |                                                 | Server2 | 10.1.2.6 |
+          |<----(Adım 2: DNS Reply)-------------------------+---------+----------+
+          |     "Server1 = 10.1.2.3"
+          |
+          v
+  (Adım 3: IP Packet)
+  Destination IP: 10.1.2.3
+  [ TCP/IP Network (Routers & Switches) ]
+          |
+          v
+     [ Server1 ] (10.1.2.3)
+
+```
+
+1. **Sorgu (DNS Query):** PC11, ağdaki DNS sunucusuna bir mesaj atar: *"Bana Server1'in IP'sini bul!"*
+2. **Cevap (DNS Reply):** DNS sunucusu kendi veritabanına bakar ve PC11'e IP adresini (`10.1.2.3`) söyler.
+3. **İletişim Başlar:** PC11 artık hedef IP'yi öğrenmiştir. Bu dakikadan itibaren DNS devreden çıkar ve PC11 doğrudan `10.1.2.3` adresine veri (IP Packet) göndermeye başlar.
+
+### Sınav İçin İki Kritik Detay 
+
+CCNA sınavında bunlar karşına Tuzak Soru olarak çıkabilir:
+
+1. **Router'ların DNS Umrunda Değildir!**
+* Ağdaki Router'lar, DNS paketlerine özel bir muamele yapmaz. Onlar için bu paket, hedef IP adresi DNS sunucusunun IP'si olan sıradan bir IP paketinden ibarettir. Router sadece IP'ye bakar, paketin içindeki "Server1 kimmiş?" sorusuyla ilgilenmez.
+
+2. **Dünya Çapında Distributed Sistem:**
+* Dünyadaki hiçbir DNS sunucusu (Google'ın 8.8.8.8'i bile) dünyadaki tüm web sitelerinin IP adresini tek başına bilemez. DNS sistemi **dağıtık (distributed)** bir yapıdadır. Eğer senin ofisindeki DNS sunucusu `www.example.com`'un IP'sini bilmiyorsa, o da gider dünyadaki diğer "yetkili" DNS sunucularına sorar. Sunucular aralarında paslaşarak cevabı sana getirir.
+
+## Address Resolution Protocol (ARP)
+
+Peki ama bir Ethernet ağında, Router paketi kime atacağını (Hedef MAC adresini) nereden bilecek?
+
+* Cihaz, bir sonraki durağın (Next-Hop Router veya hedef bilgisayar) **IP adresini bilir**.
+* Ancak o cihazın fiziksel donanım adresi olan **MAC adresini önceden bilemez!**
+
+İşte TCP/IP'nin bu büyük sorunu çözmek için yarattığı dedektifin adı **ARP (Address Resolution Protocol)**'dür. ARP, aynı LAN üzerindeki (aynı ağdaki) bir IP adresinin hangi MAC adresine ait olduğunu **dinamik olarak** öğrenmemizi sağlar.
+
+### ARP'ın 2 Temel Mesajı
+
+ARP süreci son derece kibar ama etkili bir soru-cevap üzerine kuruludur:
+
+1. **ARP Request:** * Mesajın özü şudur: *"Eğer bu IP adresi sana aitse, lütfen bana MAC adresini söyle."*
+* Bu mesaj bir **LAN Broadcast** olarak gönderilir. Yani ağdaki *herkes* bu soruyu duyar ve paketi işler.
+
+2. **ARP Reply:** * Sadece aranan IP adresine sahip olan cihaz bu mesaja cevap verir.
+* İçerisinde orijinal IP adresi ve onunla eşleşen o gizemli MAC adresi bulunur.
+
+### Örnek ARP Süreci 
+
+Daha önceki routing örneğimizin son adımını (R3'ün PC2'ye paketi teslim etme anını) hatırlayalım. R3, PC2'nin IP'sini (`150.150.4.10`) biliyor ama MAC'ini bilmiyor. İşte adım adım ARP'nin çalışması:
+
+**[ARP Süreci]**
+
+```text
+       [ R3 ] (Router)                                      [ PC2 ] (Host)
+       (IP: R3's IP)                                     (IP: 150.150.4.10)
+       (MAC: R3's MAC)                                  (MAC: 0200.2222.2222)
+
+        |                                                      |
+        | 1) ARP REQUEST (Ethernet Broadcast)                  |
+        |----------------------------------------------------->|
+        |  "Hedef IP 150.150.4.10 kimin? MAC'i nedir?"         |
+        |  (Kendi IP ve MAC'ini de pakete yazar)               |
+        |                                                      |
+        |                                                      |
+        | 2) ARP REPLY (Ethernet Unicast -> R3)                |
+        |<-----------------------------------------------------|
+        |  "O IP benim! Al bu da MAC adresim:                  |
+        |   0200.2222.2222"                                    |
+        |                                                      |
+
+```
+
+* **Detay 1:** R3 soruyu sorarken **Broadcast** yapar. Yani ağdaki tüm cihazlar bu soruyu duyar ama IP onlara ait değilse çöpe atarlar.
+* **Detay 2:** PC2 cevabı verirken Broadcast yapmaz! Doğrudan R3'e **Unicast (Birebir)** cevap döner, çünkü R3'ün sorarken verdiği IP/MAC bilgilerini kaydetmiştir. Karşılıklı olarak birbirlerini öğrenmiş olurlar.
+
+### ARP Önbelleği / Hafızası
+
+Router'lar ve bilgisayarlar balık hafızalı değildir! Her paket göndereceklerinde ağa "Bu IP kimin?" diye bağırmazlar (yoksa ağ trafiği felç olurdu).
+
+* **Öğren ve Kaydet:** Cihazlar öğrendikleri bu IP-MAC eşleşmelerini kendi içlerindeki **ARP Cache (veya ARP Table)** adı verilen bir hafızada tutarlar.
+* **Önce Hafızaya Bak:** Bir IP paketi Ethernet frame'ine konulacağı zaman, cihaz önce kendi ARP tablosuna bakar. Eğer eşleşme oradaysa hiç ARP Request yollamadan doğrudan paketi gönderir.
+* **Time Out:** ARP tablosundaki bu bilgiler sonsuza kadar kalmaz. Cihazlar belli bir süre kullanılmayan kayıtları (cihaz ağdan çıkmış olabilir diye) silerler. Bu yüzden ara sıra ağda yeniden ARP Request'leri uçuştuğunu görebilirsin.
+
+> Bir bilgisayarın (Windows/Linux/Mac) ARP hafızasında hangi IP-MAC eşleşmelerini tuttuğunu görmek istiyorsan, Command Prompt açıp şu efsanevi komutu yazman yeterlidir:
+> `arp -a`
+> Çıkan MAC adreslerini ise -> https://www.wireshark.org/tools/oui-lookup.html buradan sorgulayabilirsiniz yalnız OUI kısmını kopyalayın yani örneğin : 58:D7:59 -> Huawei Technologies Co.,Ltd
+
+## ICMP Echo ve Ping Komutu 
+
+TCP/IP ağını kurduktan sonra, hiçbir uygulamaya (HTTP, DNS vb.) bel bağlamadan sadece **temel IP bağlantısının** çalışıp çalışmadığını test etmenin bir yoluna ihtiyacın vardır. Bunun için kullanılan bir numaralı araç **ping** komutudur.
+
+* **Ping (Packet Internet Groper):** Arka planda **ICMP (Internet Control Message Protocol)** adı verilen özel bir protokol kullanır.
+* **Nasıl Çalışır?** Sen bir IP adresine ping attığında, bilgisayarın karşı tarafa bir **ICMP Echo Request** mesajı yollar. Karşıdaki bilgisayar bu mesajı alırsa, sana bir **ICMP Echo Reply** döndürmek zorundadır.
+
+### Ping Neyi Test Eder?
+
+Bu CCNA sınavında banko sorudur! Ping komutu hiçbir uygulama katmanı protokolüne ihtiyaç duymaz. Sadece şunların düzgün çalıştığını doğrular:
+
+* **Layer 1 (Physical):** Kablolar sağlam mı?
+* **Layer 2 (Data-Link):** MAC adresleri ve ARP çalışıyor mu?
+* **Layer 3 (Network):** IP adresleri doğru mu ve Router'lar paketi hedefe ulaştırabiliyor mu?
+* 
+Eğer Ping başarılıysa, paketin hedefe gidip sağ salim geri dönebildiğini kanıtlamış olursun.
+
+### Ping Komutu 
+
+Aşağıdaki örnekte, Berkay'ın kendi bilgisayarından Irem'in bilgisayarına ping attığı o basit ama güçlü işlemi görüyoruz:
+
+**[Ping Kullanım Örneği]**
+
+```text
+       [ Berkay ]                                                [ Irem ]
+       (Komut: ping Irem)
+           |                                                         |
+           | 1) ICMP ECHO REQUEST                                    |
+           |-------------------------------------------------------->|
+           | Frame: [Ethernet Header][IP Header][ICMP Echo Request]  |
+           | "Irem, orada mısın? Duyuyor musun beni?"                |
+           |                                                         |
+           | 2) ICMP ECHO REPLY                                      |
+           |<--------------------------------------------------------|
+           | Frame: [Ethernet Header][IP Header][ICMP Echo Reply]    |
+           | "Evet Berkay, buradayım! Mesajını aldım."               |
+           |                                                         |
+
+```
+
+Ping, ICMP'nin sadece en meşhur özelliğidir. ICMP aslında ağın yöneticisi gibidir; "Destination Unreachable" veya "Time Exceeded" gibi ağdaki birçok hata ve kontrol mesajını da taşır. Yani ICMP bir hata bildirim mekanizmasıdır.
