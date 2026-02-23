@@ -675,3 +675,150 @@ Bu olaylarda IP Adresi mantıksaldır, değişmez (Senin TC Kimlik Numaran gibid
 MAC Adresi fizikseldir, her durakta çöpe atılıp yenisi yazılır (Bindiğin taksinin plakası gibidir). ARP ise, "Bu TC Kimlik numaralı adam hangi taksiye binecek?" sorusunun cevabını bulur.
 
 ---
+
+## IP Adresleme Routing'e Nasıl Yardımcı Olur?
+
+TCP/IP ağına bağlanan her bir cihazın (Bilgisayar, Telefon, Router interface) kendini tanıtmak için **Network Layer** seviyesinde bir adrese ihtiyacı vardır. Zaten biz buna **IP Adresi** diyoruz.
+
+### Posta Adresi Mantığı
+
+IP adresleme mantığı aslında günlük hayattaki posta sistemiyle birebir aynı çalışır:
+
+* Eğer postacıdan (Router) bir kargo (IP Packet) bekliyorsan, evinin kapısında geçerli ve eşsiz bir posta adresinin (IP Address) yazıyor olması şarttır. Adresin yoksa kargo alamazsın.
+* Sadece adresin olması yetmez, bu adreslerin belirli bir mantığa göre **gruplandırılması** gerekir (Mahalle, Sokak, Kapı No gibi).
+
+İşte IP dünyasında bu adres gruplarına **IP Networks (IP Ağları)** ve **Subnets (Alt Ağlar)** adını veriyoruz. Routing işleminin bu kadar hızlı ve verimli olmasının tek sırrı, adreslerin bu gruplar halinde organize edilmiş olmasıdır.
+
+### Terminoloji Uyarısı: Network vs. Internetwork 
+
+CCNA çalışırken kelimelerin tam olarak ne anlama geldiğini bilmek hayat kurtarır. 
+
+> * **IP Network:** IP terminolojisinde "Network" kelimesi çok spesifik, **mantıksal bir kavramdır.** Belirli bir IP adresi grubunu ifade eder (Örn: Sınıf A Ağı, 192.168.1.0 ağı gibi).
+> * **Internetwork (İnternet Ağı):** Router'ların, Switch'lerin, kabloların ve cihazların birbirine bağlanmasıyla oluşan o devasa **fiziksel sistemin** tamamına verilen isimdir.
+> *Kısacası:* Kablolara ve Switch'lere bakarken "Internetwork", IP adreslerine bakarken "IP Network" kelimesini kullanacağız ki kafalar karışmasın!
+
+## IP Adres Grupları için Kurallar (Networks and Subnets)
+
+TCP/IP, aynı fiziksel ağda (örneğin aynı Switch'e bağlı) bulunan cihazların IP adreslerini bir **Grup** halinde toplar. Bu gruplara **IP Network** veya **IP Subnet** diyoruz bunu unutmayalım.
+
+### Posta Kodu Mantığı
+
+Nasıl ki aynı mahalledeki tüm evlerin posta kodu aynıysa, aynı ağdaki cihazların da IP adreslerinin başlangıç kısımları **aynı olmak zorundadır.**
+
+* **Posta Sistemi:** Yan yana iki evin posta kodunun farklı olması çok saçma olurdu. Aynı şekilde, ülkenin bir ucundaki evle diğer ucundaki evin posta kodunun aynı olması da imkansızdır.
+* **IP Sistemi:** Yakın (aynı ağdaki) IP adresleri aynı grupta olmalı, uzak (farklı ağlardaki) IP adresleri farklı gruplarda olmalıdır.
+
+### Sayısal Gruplama Örneği
+
+Bir önceki konulardaki örneklerde IP adreslerine dikkatle bakarsan, adreslerin rastgele verilmediğini görürsün. İlk 3 kısımları aynıdır:
+
+* **PC1'in bulunduğu üst LAN:** Adresler `150.150.1` ile başlar.
+* **R1 ile R2 arasındaki Serial WAN:** Adresler `150.150.2` ile başlar.
+* **R2 ile R3 arasındaki EoMPLS WAN:** Adresler `150.150.3` ile başlar.
+* **PC2'nin bulunduğu alt LAN:** Adresler `150.150.4` ile başlar.
+
+### Neden Grupluyoruz?
+
+Bu gruplamanın IP Routing açısından devasa bir faydası vardır: **Routing Table boyutunu küçültmek!**
+Eğer gruplama olmasaydı, Router'ın dünyadaki milyarlarca cihazın tek tek IP adresini ezberlemesi gerekirdi. Ama Subnet mantığı sayesinde Router sadece "Grupları" bilir. *"150.150.4.x mahallesine gidenler sağdan çıksın"* demesi yeterlidir.
+
+### Subnetting'in İki Altın Kuralı
+
+Subnetting konusuna çok detaylı gireceğiz ama şu an bu iki temel kuralı zihne kazmak şart. Sınavda hayat kurtarır:
+
+1. **Aynı Gruptalar:** Eğer iki cihazın IP adresi arasında hiçbir Router yoksa (örneğin aynı Switch'e bağlı iki PC), bu cihazlar **AYNI grupta (Subnet)** olmak zorundadır.
+2. **Farklı Gruptalar:** Eğer iki cihazın IP adresi arasında en az bir tane Router varsa, bu cihazlar kesinlikle **FARKLI gruplarda (Subnets)** olmak zorundadır! Router sınır çizer!
+ 
+## IP Header Anatomisi
+
+Routing işleminin kalbinde **IPv4 Header** yatar. Router'lar bir paketi aldıklarında, nereye gideceğini bulmak için doğrudan bu header içine bakarlar.
+
+### Header Yapısı
+
+Standart bir IPv4 Header **20 Byte** uzunluğundadır ve satırları 4'er Byte (32 bit) olacak şekilde çizilir. Aşağıdaki örnek, bu 20 Byte'ın içine nelerin sığdırıldığını gösteriyor:
+
+**[IPv4 Header (Toplam 20 Bytes)]**
+
+```text
+     +------------+------------+------------------------+
+     | Version, Length, DS Field,    Packet Length      | ---> 4
+     +------------+------------+---+--------------------+
+     |      Identification,   Flag,   Fragment Offset   | ---> 4
+     +------------+------------+---+--------------------+ 
+     | Time to Live (TTL) |  Protocol  | Header Checksum| ---> 4
+     +--------------------+------------+----------------+
+     |               Source IP Address                  | ---> 4
+     +--------------------------------------------------+
+     |             Destination IP Address               | ---> 4
+     +--------------------------------------------------+
+                                        Toplam = 20 Bytes
+
+```
+
+### Sınav İçin Altın Bilgiler
+
+Bu tablodaki her alanı şu an ezberlemeye gerek yok. Ancak şu üç bilgiyi adın gibi bilmelisin:
+
+1. **32-Bit Adresler:** IPv4 başlığında hem Source hem de Destination IP adresleri bulunur ve bu adreslerin her biri **32 bit** (4 Byte) uzunluğundadır.
+2. **20-Byte Boyut:** Standart bir IPv4 header'ın toplam boyutu **20 Byte**'tır.
+3. **Değişmeyen Tek Şey:** Bu konuların başından beri anlattığımız o kritik kuralı hatırla! Router'lar her durakta Layer 2 (Data-Link / MAC / HDLC) header'ları çöpe atıp yenisini yazar. **Ancak IPv4 header'ına (yukarıdaki tabloya) DOKUNMAZLAR!** IP header'ı ve içindeki IP adresleri, paketin yolculuğu boyunca **DEĞİŞMEZ.**
+
+IP header yolculuk boyunca değişmez deriz ama ufak bir istisna vardır: Her Router'dan geçerken `Time to Live (TTL)` değeri 1 azaltılır ve buna bağlı olarak `Header Checksum` yeniden hesaplanır. Ama Source ve Destination IP adresleri sabittir!
+
+## Routing Protokolleri Nasıl Çalışır?
+
+Routing mantığının kusursuz çalışması için ağdaki herkesin üzerine düşeni bilmesi gerekir:
+
+* **Bilgisayarlar (Hosts):** Sadece kendi **Default Gateway**'lerinin IP adresini bilmeleri yeterlidir. Gerisine karışmazlar.
+* **Router'lar:** Ulaşılabilir **her bir IP network ve subnet** bilmek zorundadırlar!
+
+Peki bir Router bu kadar yolu nasıl öğrenir? Ağ uzmanı geçip bütün yolları tek tek eliyle girebilir (Buna *Static Routing* diyoruz). 
+Bunun yerine en iyi yöntem; tüm Router'larda **Aynı IP Routing Protokolünü (OSPF, EIGRP vb.)** çalıştırmaktır. Protokolü açarsın ve Router'lar kendi aralarında mesajlaşarak tüm haritayı otomatik olarak öğrenirler.
+
+### 3 Evrensel Adım
+
+Farklı routing protokolleri olsa da (aksi takdirde tek bir protokol olurdu), hepsi temelde şu 3 adımı izler:
+
+1. **Önce Kendi Kapının Önünü Süpür:** Her Router, öncelikle kendi kablosunun doğrudan bağlı olduğu ağları (Subnets) haritasına ekler. (Bunun için yönlendirme protokolüne bile ihtiyaç yoktur, kabloyu takmak yeterlidir).
+2. **Komşularla Dedikodu Yap:** Router, kendi bildiği tüm yolları (hem doğrudan bağlı olanları hem de başkalarından duyduklarını) komşu Router'lara anlatır.
+3. **Duyduklarını Haritana Yaz:** Bir Router, komşusundan yeni bir yol öğrendiğinde bunu haritasına ekler. Ve bu yeni ağa gitmek için **"Next-Hop"** olarak haberi getiren komşusunu yazar.
+
+Bazen bir Router aynı hedefe giden birden fazla yol öğrenebilir. Bu durumda Router, **"Metric"** adı verilen bir ölçüm değerine (hız, mesafe vs.) bakar ve **en iyi** yolu seçip Routing tablosuna sadece onu yazar.
+
+### Adım Adım Yönlendirme
+
+Şimdi gözümüzde canlandıralım. Hatırlarsan en altta `150.150.4.0` ağı (PC2'nin olduğu yer) vardı. Bu ağın varlığı, en aşağıdaki R3'ten en yukarıdaki R1'e kadar nasıl fısıldanıyor, adım adım izleyelim:
+
+**[Routing Protokollerinin Subnets'ler Hakkında Nasıl Duyuru Yaptığına Dair Örnek]**
+
+*(Haberler aşağıdan yukarıya doğru yayılır!)*
+
+```text
+       (F) R1 Routing Table'a ekler: [150.150.4.0 -> Next Hop: R2 (150.150.2.7)]
+          ^
+          | (E) R2, R1'e "Ben 150.150.4.0 ağını biliyorum!" der. 
+          |
+       [ R1 ]
+          |
+       [ R2 ]
+          ^
+          | (C) R3, R2'ye "Ben 150.150.4.0 ağını biliyorum!" der. 
+          |
+          | (D) R2 Routing Table'a ekler: [150.150.4.0 -> Next Hop: R3 (150.150.3.1)]
+          |
+       [ R3 ]
+          | (B) R3, kendisine doğrudan bağlı olan bu ağı haritasına ekler.
+          v
+    [ Subnet 150.150.4.0 ]  <-- (A) Ağ burada var olur.
+
+```
+
+* **Adım A:** Hikaye en altta başlar. `150.150.4.0` IP subnet'i, R3 Router'ının Ethernet bacağına fiziksel olarak kurulur.
+* **Adım B:** R3, "Hey, benim bacağımda yeni bir ağ var!" diyerek bu ağı **Doğrudan Bağlı** olarak haritasına ekler. *(Bunun için protokole gerek yoktur).*
+* **Adım C:** R3'ün içindeki Routing Protokolü (OSPF vb.) devreye girer ve komşusu R2'ye bir **Routing Update (Routing Güncellemesi)** mesajı atar: *"Duyduk duymadık demeyin, bende 150.150.4.0 diye bir ağ var!"*
+* **Adım D:** R2 bu haberi alır ve kendi haritasına yazar: *"150.150.4.0 ağına gitmek için paketi **R3'e (150.150.3.1)** fırlat."*
+* **Adım E:** Dedikodu durmaz! R2, duyduğu bu taze bilgiyi kendi komşusu olan R1'e fısıldar: *"R1 dostum, ben 150.150.4.0 diye bir ağa giden yolu biliyorum haberin olsun."*
+* **Adım F:** R1 bu haberi alır ve o da kendi haritasına yazar: *"150.150.4.0 ağına gitmek için paketi Serial0 kapısından **R2'ye (150.150.2.7)** fırlat."*
+
+---
+
