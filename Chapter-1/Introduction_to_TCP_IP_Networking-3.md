@@ -332,3 +332,149 @@ Bu mevzuyu kapatırken, neden yıllarca Leased Line kullandık?
 | **Kalite:** Hattın kalitesi yüksektir, bant genişliği garantilidir. |  |
 
 ---
+
+## WAN Teknolojisi Olarak Ethernet (Modern WAN)
+
+Ethernet, ilk on yıllarında sadece LAN için uygundu. Mesafe kısıtlamaları yüzünden en fazla bir kampüs ağını kapsayabiliyordu. 
+Ancak IEEE, fiber optik teknolojilerini geliştirerek Ethernet'in sınırlarını inanılmaz derecede genişletti.
+
+### Mesafe Sınırını Aşmak
+
+Ethernet'i bir WAN teknolojisi yapan şey, fiber optik kablolardaki şu muazzam gelişmelerdir:
+
+* **1000BASE-LX:** Single-mode fiber kullanarak mesafeyi **5 kilometreye** çıkardı.
+* **1000BASE-ZX:** İşleri daha da büyüterek tek bir kabloyla **70 kilometre** mesafeye ulaşmayı sağladı.
+
+Bu uzun mesafeler sayesinde Servis Sağlayı'lar, "Neden bu kadar hızlı ve ucuz olan Ethernet'i şehirler arası bağlantılarda kullanmıyoruz?" dediler ve Ethernet WAN hizmetleri doğdu.
+
+### Mimari Yapı
+
+Örnek, bir müşterinin Servis Sağlayıcıya (SP) Ethernet üzerinden nasıl bağlandığını gösteriyor. Eski "Telco" mantığına çok benzer, ancak aradaki cihazlar artık Ethernet Switch'leridir.
+
+**[Fiber Ethernet Bağlantısı]**
+
+```text
+       Müşteri SITE A                                           Müşteri SITE B
+      (Senin Binan)                                             (Diğer Şube)
+     +-------------+                                           +-------------+
+     |   [ R1 ]    |                                           |   [ R2 ]    |
+     |   (CPE)     |                                           |   (CPE)     |
+     +------+------+                                           +------+------+
+            |                                                         |
+            | (Fiber Ethernet Access Link)                            | (Fiber Ethernet Access Link)
+            v                                                         v
+     +------------+                                            +------------+
+     |   [SP 1]   |                                            |   [SP 2]   |
+     |   (PoP)    |                                            |   (PoP)    |
+     | (Ethernet  |==============( SP's NETWORK )==============| (Ethernet  |
+     |  Switch)   |         (Service Provider WAN)             |  Switch)   |
+     +------------+                                            +------------+
+
+```
+
+### Yeni WAN Terimleri
+
+Sınavda bu üç harfli kısaltmaları çok göreceğiz:
+
+1. **SP (Service Provider):** İnternet veya WAN hizmetini aldığın Telekom firması (Örn: Türk Telekom, Superonline).
+2. **CPE (Customer Premises Equipment):** Müşteri lokasyonunda duran cihaz. Yani senin binandaki **Router (R1 ve R2)**. (Sahibi sen de olabilirsin, kiralık da olabilir ama senin ofisindedir).
+3. **PoP (Point of Presence):** Servis sağlayıcının sana en yakın olan fiziksel binası/santrali. Fiber kablon senin ofisinden çıkar ve direkt bu PoP noktasına girer.
+4. **Access Link:** Senin Router'ın (CPE) ile sağlayıcının Switch'i (PoP) arasındaki o fiber optik bağlantının adıdır.
+
+Eski kiralık hatlarda servis sağlayıcının binasında karmaşık Telco switchleri vardı. Ethernet WAN'da ise SP'nin PoP noktasında bildiğimiz devasa **Ethernet Switch'ler** bulunur. 
+SP'nin kendi ağının içinde ne kullandığı bizi ilgilendirmez; biz sadece Ethernet portuna takar ve gerisine karışmayız!
+
+## Layer 2 Hizmeti Oluşturan Ethernet WAN'lar
+
+Servis sağlayıcılar birçok farklı Ethernet WAN hizmeti sunar. Ancak CCNA sınavı için bilmen gereken en temel model şudur: **Point-to-Point Ethernet**.
+
+* **Mantıksal Olarak:** İki Router (R1 ve R2) birbirine doğrudan tek bir kabloyla bağlıymış gibi davranır.
+* **Fiziksel Olarak:** İki Router da aslında servis sağlayıcının ağına (PoP noktasına) fiber optik kabloyla bağlıdır.
+
+### Sınav Terimleri
+
+Sektörde ve CCNA sınavında bu hizmet için tek bir isim kullanılmaz. Aşağıdaki terimlerin **hepsinin aynı şeyi** (Point-to-Point Ethernet WAN) ifade ettiğini adın gibi bilmelisin:
+
+1. **Ethernet WAN:** Ethernet LAN'dan ayırmak için kullanılan en genel, şemsiye terim.
+2. **E-Line (Ethernet Line Service):** MEF (Metro Ethernet Forum) organizasyonunun belirlediği resmi terimdir. "Point-to-Point" hizmet anlamına gelir.
+3. **Ethernet Emulation (Ethernet Taklidi):** Veri, uçtan uca tek bir parça Ethernet kablosundan geçmez (arada sağlayıcının devasa ağı vardır). Ancak sistem bunu sanki tek bir kabloymuş gibi **emulate** eder yani taklit eder.
+4. **EoMPLS (Ethernet over MPLS):** En çok duyacağın terim budur! Servis sağlayıcı arka planda o karmaşık ağı yönetmek için **MPLS** (Multiprotocol Label Switching) adı verilen süper hızlı bir teknoloji kullanır. Ancak müşteriye bunu Ethernet paketi içinde teslim eder. Bu şunun gibi aslında dış pakette "Ethernet" yazar, ama taşıyıcı kargo firmasının motoru "MPLS"tir.
+
+### EoMPLS Mantığı 
+
+Örnek, işin arka planındaki o karmaşık SP bulutunu görmezden gelip, Router'ların dünyayı nasıl gördüğünü anlatır.
+
+**[EoMPLS, İki Router Arasında Basit Bir Ethernet Bağlantısı Gibi Davranıyor]**
+
+```text
+       SITE 1 (LAN)                                         SITE 2 (LAN)
+      --------------                                       --------------
+      
+      [ PC 1 ]                                                 [ PC 2 ]
+         |                                                        |
+         | (Ethernet LAN)                                         | (Ethernet LAN)
+         v                                                        v
+    [ROUTER 1]  ===========================================  [ROUTER 2]
+     (G0/1)                    (EoMPLS WAN)                    (G0/0)
+                           Fiber Optic Ethernet Link
+```
+
+Eski kiralık hatlarda Router'lar birbirine "Zikzak Çizgi" ve "Serial Port (S0/0/0)" ile bağlanıyordu hatırla. Burada ise Router'lar birbirine **Gigabit Ethernet (G0/1 ve G0/0)** portlarıyla bağlı!
+Router açısından bu WAN bağlantısının, yan odadaki bir Switch'e bağlanmaktan **hiçbir farkı yoktur**. Full-Duplex şekilde aynı anda veri gönderebilirler.
+
+## Routerlar Ethernet Emulation Kullanarak IP Paketlerini Nasıl Yönlendirir?
+
+Eğer servis sağlayıcımızdan bir **EoMPLS (Ethernet over MPLS)** hizmeti aldıysak, Router'ımız bu WAN hattını tıpkı sıradan bir LAN hattıymış gibi kullanır.
+
+* **Fark Nedir?** HDLC veya PPP kullanmak yerine, Router paketi WAN'a gönderirken de bildiğimiz, tanıdığımız **Ethernet (802.3) Header ve Trailer**'ını kullanır.
+* **Her Yer Ethernet:** PC'den Router'a Ethernet, Router'dan Router'a Ethernet, Router'dan diğer PC'ye yine Ethernet!
+
+### EoMPLS Bağlantısı
+
+Aşağıdaki örnekte ortadaki WAN bağlantısının üzerinde küçük bir cloud var. Bu cloud, "Bu sıradan bir kablo değil, kilometrelerce uzunluğundaki bir Ethernet WAN hizmetidir" demek içindir.
+
+```text
+      Adım 1 (LAN 1)             Adım 2 (EoMPLS WAN)             Adım 3 (LAN 2)
+     (PC1'den R1 MAC)             (R1 MAC'ten R2 MAC)           (R2 MAC'ten PC2 MAC)
+                                       _(Cloud)_
+     +--------------+              __(           )__              +--------------+
+     |   [PC 1]     |             (   EoMPLS WAN    )             |    [PC 2]    |
+     +------+-------+              *---------------*              +------+-------+
+            |                              |                             |
+            |           [802.3 Header][IP Packet][802.3 Trailer]         |
+            |                              |                             |
+            v                              v                             v
+          [ R1 ] ---------------------------------------------------- [ R2 ]
+          (G0/1)                   (G0/1'den G0/0'a)                  (G0/0)
+
+```
+
+Örneklerde her adımda frame'in üzerinde "802.3 (Eth)" yazar. Ancak **dikkat et!** Her adımda bu frame içindeki MAC adresleri **değişir!** Router'lar eski frame'i çöpe atıp yenisini üretirler.
+
+### Adım Adım Ethernet Yolculuğu
+
+PC1'in PC2'ye bir paket gönderdiğini varsayalım. İşte o 3 adım:
+
+**1. Adım: PC1'den R1'e (LAN)**
+
+* PC1, IP Paketini bir Ethernet Frame'i içine koyar.
+* **Hedef MAC:** R1'in LAN bacağındaki MAC adresi.
+* R1 bu paketi alır.
+
+**2. Adım: R1'den R2'ye (WAN - Burası FENA!)**
+
+* R1 paketi açar (De-encapsulate), eski Ethernet header'ını çöpe atar.
+* IP Paketini alır ve onu **YENİ bir Ethernet Frame'i** içine koyar. Neden mi? Çünkü WAN hattı da Ethernet!
+* **Source MAC:** R1'in WAN bacağının (G0/1) MAC adresi.
+* **Destination MAC:** R2'nin WAN bacağının (G0/0) MAC adresi.
+* *(İşte HDLC ile en büyük fark budur. HDLC'de MAC adresi yoktu, EoMPLS'te WAN üzerinde de MAC adresi konuşulur!)*
+
+**3. Adım: R2'den PC2'ye (LAN)**
+
+* R2 paketi alır, WAN'dan gelen Ethernet header'ı çöpe atar.
+* IP Paketini yepyeni bir Ethernet Frame'i içine koyar.
+* **Hedef MAC:** PC2'nin MAC adresi.
+* Ve paketi PC2'ye teslim eder.
+
+---
+
