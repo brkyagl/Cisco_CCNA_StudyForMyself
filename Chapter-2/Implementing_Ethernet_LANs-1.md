@@ -379,3 +379,36 @@ Gerçek dünyada Telnet/SSH şifrelemelerini ve çok daha gelişmiş güvenlik �
 
 ---
 
+## CLI - Hayat Kurtaran Yardım Özellikleri
+
+Cisco IOS komut referans belgelerinin tamamını yazdırsaydın, boyun kadar bir kağıt yığını elde ederdin. Hiç kimse ama **hiç kimse** tüm Cisco komutlarını ezbere bilemez!
+Gerçek bir ağ uzmanının sırrı komutları ezberlemek değil, komutları hatırlatan o pratik **Yardım** araçlarını kullanmayı bilmektir. 
+Cisco IOS sana zaman kazandırmak ve yazım hatalarını önlemek için muazzam bir "Context-Sensitive Help" (Bağlama Duyarlı Yardım) sunar.
+
+### Cisco IOS Yardım Kısayolları
+
+Aşağıdaki tablo, klavyendeki **Soru İşareti (`?`)** ve **`Tab`** tuşunun nasıl mucizeler yarattığını gösteriyor. (Sınavda bu boşluklu ve boşluksuz kullanımların farkı kesin sorulur!)
+
+| Ne Yazıyorsun? | Ne İşe Yarar? | GNS3 / Saha Örneği |
+| --- | --- | --- |
+| **`?`** | Bulunduğun modda (User veya Enable) kullanabileceğin **tüm komutların** bir listesini döker. | `Switch# ?` (Enter'a basmadan tüm listeyi verir). |
+| **`command ?`** *(Boşluk var)* | Komutu yazdın, bir **boşluk** bırakıp `?` koydun. Bu sana o komuttan sonra gelebilecek tüm **parametre (alt seçenek)** opsiyonlarını listeler. | `Switch# show ?` (Show komutundan sonra ne yazabileceğini gösterir: *ip, mac, interfaces* vb.) |
+| **`com?`** *(Boşluk YOK)* | Sadece birkaç harf yazıp **bitişik** şekilde `?` koyarsan, o harflerle başlayan tüm ana komutları listeler. | `Switch# co?` (Sana *copy, configure, connect* gibi "co" ile başlayanları listeler). |
+| **`command parm?`** *(Boşluk YOK)* | Ana komutu ve parametrenin ilk harflerini yazıp **bitişik** `?` koyarsan, o harflerle başlayan parametreleri listeler. | `Switch# show in?` (Sana sadece *interfaces* seçeneğini gösterir). |
+| **`Tab` Tuşu** | IOS'un **Otomatik Tamamlama** özelliğidir. Yeterli harfi yazdıktan sonra Tab'a basarsan, kelimenin geri kalanını cihaz kendi tamamlar. (Sadece tek bir ihtimal kaldıysa çalışır). | `Switch# sh<Tab>` yazarsan cihaz bunu hemen `Switch# show ` yapar. |
+| **`command parm1 ?`** | İlk parametreyi yazdıktan sonra bir boşluk daha bırakıp `?` koyarsan, dizilimin bir sonraki adımında (ikinci parametre olarak) ne yazabileceğini gösterir. | `Switch# show ip ?` (Sana *interface, route* vb. seçenekleri gösterir). |
+
+### `?` İşaretinin Büyüsü
+
+1. **Enter Tuşuna Gerek Yok:** `?` tuşuna bastığın anda Cisco IOS **anında** tepki verir. Onaylamak için Enter'a basmana gerek yoktur!
+2. **Kaldığın Yerden Devam:** `?` basıp seçenekleri gördükten sonra, IOS senin o ana kadar yazdığın komutu alt satıra tekrar basar. Böylece baştan yazmak zorunda kalmazsın, kaldığın yerden yazmaya devam edersin. 
+3. **Hemen Enter'a Basarsan:** `?` ile seçeneklere bakıp hemen ardından Enter'a basarsan, IOS o komutu sadece o ana kadar yazdığın eksik parametrelerle çalıştırmayı dener.
+
+### Context-Sensitive: Modlara Göre Değişen Zeka
+
+Yardım özelliği son derece zekidir. Sana sadece **o an bulunduğun modda** yetkin olan komutları gösterir.
+
+* Eğer **User Mode (`>`)** içindeyken `?` basarsan, karşına kısa ve zararsız bir komut listesi çıkar (Çünkü yetkin düşüktür).
+* Eğer **Enable Mode (`#`)** içindeyken `?` basarsan, liste çok daha uzun ve güçlü komutlarla doludur.
+* Aynı şekilde ileride göreceğimiz **Configuration Modlarında** da `?` bastığında sadece o ayar menüsüne özel komutlar karşına çıkar.
+
