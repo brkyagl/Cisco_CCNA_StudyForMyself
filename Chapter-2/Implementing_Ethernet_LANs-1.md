@@ -412,3 +412,49 @@ Yardım özelliği son derece zekidir. Sana sadece **o an bulunduğun modda** ye
 * Eğer **Enable Mode (`#`)** içindeyken `?` basarsan, liste çok daha uzun ve güçlü komutlarla doludur.
 * Aynı şekilde ileride göreceğimiz **Configuration Modlarında** da `?` bastığında sadece o ayar menüsüne özel komutlar karşına çıkar.
 
+## Komut Geçmişi ve Düzenleme
+
+Cisco IOS, senin yazdığın komutları unutmaz! Varsayılan olarak yazdığın son **10 komutu** bir "geçmiş hafızasında" tutar. Uzun bir komutta ufak bir harf hatası yaptığında, komutu baştan yazmak ameleliktir.
+Bunun yerine komutu geri çağırıp sadece hatalı yeri düzeltirsin.
+
+Sınavda zaman kazanmak ve laboratuvarda hızlanmak için aşağıdaki tabloyu adın gibi bilmelisin:
+
+### Komut Düzenleme ve Geri Çağırma için Tuş Dizileri
+
+| Klavye Kısayolu | Ne İşe Yarar? |
+| --- | --- |
+| **Yukarı Ok veya Ctrl+P** | En son kullandığın komutu ekrana getirir. Tekrar basarsan bir öncekine gider. (P = **P**revious / Önceki) |
+| **Aşağı Ok veya Ctrl+N** | Geçmişte çok geriye gittiysen, seni daha yeni komutlara doğru ileri taşır. (N = **N**ext / Sonraki) |
+| **Sol Ok veya Ctrl+B** | İmleci yazdığın komutun üzerinde, hiçbir şeyi silmeden **geriye/sola** doğru kaydırır. (B = **B**ack / Geri) |
+| **Sağ Ok veya Ctrl+F** | İmleci yazdığın komutun üzerinde, hiçbir şeyi silmeden **ileriye/sağa** doğru kaydırır. (F = **F**orward / İleri) |
+| **Backspace** | İmleci geriye doğru kaydırırken, harfleri **silerek** ilerler. |
+
+## `show` ve `debug` Komutları (Sistemi İzlemek)
+
+Bir ağ uzmanının gün içinde en çok kullandığı komut hiç şüphesiz **`show`** komutudur. Ancak sorun çözerken bazen çok daha derinlere inmek gerekir. İşte bu iki dev komutun farkı:
+
+### 1. `show` Command (Fotoğraf Çekmek)
+
+`show` komutu, cihazın mevcut operasyonel durumunun bir "anlık görüntüsünü" listeler. Yani cihazın o saniyedeki fotoğrafını çeker ve sana metin olarak verir. Bu komut cihazın ayarlarını değiştirmez, sadece bilgi okur.
+
+**Örnek: `show mac address-table dynamic` (MAC Tablosunu Okumak)**
+Kullanıcı modunda (`>`) yazılan bu örnek, switch'in yönlendirme kararları alırken kullandığı o meşhur MAC adres tablosunu gösteriyor(ben test amaçlı GNS3'te yazdım o yüzden boştu):
+
+```text
+IOU1>show mac address-table dynamic 
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+
+```
+
+### 2. `debug` Command (Canlı Video Yayını)
+
+Eğer `show` komutu bir fotoğrafsa, **`debug`** komutu kesinlikle canlı bir güvenlik kamerası yayınıdır!
+
+* Bir `debug` komutu başlattığında, IOS o özellikle ilgili arka planda ne oluyorsa sana anlık mesajlar olarak ekrana basmaya başlar.
+* Varsayılan olarak bu canlı uyarı mesajları doğrudan konsol ekranına düşer.
+
+---
