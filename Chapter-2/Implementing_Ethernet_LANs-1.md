@@ -315,3 +315,67 @@ Cisco eğitimlerini okurken ve GNS3'te çalışırken şu 3 altın kuralı asla 
 3. **Prompt Okuma:** Her satırın başındaki `IOU1>` yazısı bize iki şey söyler:
 * Sol taraf: Cihazın adı (Hostname = IOU1)
 * Sağ taraf: Yetki seviyemiz (`>` veya `#`)
+
+## Konsoldan CLI Erişimi için Parola Güvenliği
+
+Fabrika ayarlarında, bir Cisco switch'in konsol portuna kabloyu taktığında sana **hiçbir şifre sormaz**. 
+Aynı şekilde `enable` yazıp Priv EXEC moduna geçerken de şifre sormaz. Çünkü Cisco der ki: *"Eğer bu adam kilitli sistem odasına girip o mavi kabloyu cihaza takabildiyse, zaten cihazın tam kontrolüne sahiptir."*
+
+Ancak iyi bir ağ uzmanı her zaman işini sağlama alır ve basit de olsa bu girişlere şifre koyar.
+
+### İki Aşamalı Güvenlik Duvarı 
+
+Konsol bağlantısında iki farklı kritik noktaya şifre koyabiliriz:
+
+1. **Console Login Password:** Cihaza mavi kabloyla ilk bağlandığında (User Mode'a girmeden önce) sorulan şifredir.
+2. **Enable Password:** User Mode'dan Privileged Mode'a geçmeye çalışırken sorulan o güçlü şifredir.
+
+### Örnek: Varsayılan Olmayan Temel Yapılandırma 
+
+Bir önceki adımda cihazı test ederken bize iki defa şifre sormamıştı hatırlarsan (en azından benim GNS3'te Cisco Switch'imde sormadı). 
+İşte cihazın bize o şifreleri sormasını görüyorsak, arka planda buradaki ayarların olması lazım. `show running-config` (çalışan ayarları göster) komutuyla cihazın beynine baktığımızda şu satırları görürüz:
+
+```text
+IOU1# show running-config
+! 
+hostname IOU1
+!
+enable secret pass123
+!
+line console 0
+ login
+ password pass321
+! 
+IOU1#
+
+```
+
+Bu çıktıdaki her bir kelimenin hayati bir anlamı var. CCNA sınavında bunları adın gibi bilmelisin:
+
+* **`!` (Ünlem İşareti):** Yorum satırıdır. IOS işletim sistemi bu satırları okumaz, sadece yapılandırma dosyasının okunaklı olması için aralara boşluk/ayraç niyetine konur.
+* **`hostname IOU1`:** Cihazın fabrika çıkışı "Switch" olan adını `IOU1` olarak değiştirir. (CLI ekranında sol tarafta yazan isim buradan gelir).
+* **`enable secret love`:** İşte bu çok kritik! User modundan Enable moduna geçerken sorulacak şifreyi **`pass123`** olarak belirler. (Ve "secret" kelimesi sayesinde bu şifreyi şifreler, bunu ileride detaylı göreceğiz).
+* **`line console 0`:** Switch'in arkasındaki o fiziksel konsol portunun (0 numaralı ilk port) ayarlarına girildiğini gösterir.
+* **`password pass321`:** Konsol portundan giriş yapacakların kullanacağı şifreyi **`pass321`** olarak belirler.
+* **`login`:** Bu tek kelimelik komut hayat kurtarır! "Koyduğum bu `pass321` şifresini girişte kullanıcılara SOR (Aktif et)" anlamına gelir. Eğer `login` yazmazsan, şifre koysan bile cihaz şifre sormaz!
+
+### Evrensel Anahtar: `enable secret`
+
+`enable secret pass123` komutu sadece konsol kablosuyla bağlananları bağlamaz!
+
+Cihaza nereden girersen gir (ister Console, ister uzaktan Telnet, ister SSH ile), eğer User Mode'dan (`>`) Priv Moduna (`#`) geçmek istiyorsan, karşına çıkacak o şifre ekranında **`pass123`** yazmak zorundasın. 
+Yani `enable` şifresi, bağlantı türünden bağımsız olarak tüm kapıların ortak kilididir.
+
+### Fiziksel Kapı: `line console 0`
+
+Son üç satır (`line console 0`, `password pass321`, `login`) ise sadece ama sadece fiziksel konsol bağlantısını ilgilendirir:
+
+1. **`line console 0`:** Switch'e "Şimdi yazacağım komutlar sadece arkandaki o fiziksel 0 numaralı (ilk ve tek) konsol portu için geçerlidir" demektir.
+2. **`login`:** Cisco IOS'a "Basit şifre kontrolünü aktif et!" talimatını verir. Fabrika ayarlarında switch konsoldan şifre sormadığı için, bu komutu yazarak cihaza *"Kapıda dur ve gelene şifre sor"* demiş olursun.
+3. **`password pass321`:** Ve o kapıda sorulacak şifrenin **`321`** olacağını belirler.
+
+*"Bu gösterdiğim ayarlar, güvenlik denizinde sadece bir damladır."* > Bu ayarlar, evdeki veya GNS3/Packet Tracer'daki laboratuvarını kurup cihazları kurcalamaya başlaman için yeterlidir. 
+Gerçek dünyada Telnet/SSH şifrelemelerini ve çok daha gelişmiş güvenlik önlemlerini ileriki konular ele alıyor
+
+---
+
