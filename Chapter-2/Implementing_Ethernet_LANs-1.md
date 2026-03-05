@@ -458,3 +458,160 @@ Eğer `show` komutu bir fotoğrafsa, **`debug`** komutu kesinlikle canlı bir g�
 * Varsayılan olarak bu canlı uyarı mesajları doğrudan konsol ekranına düşer.
 
 ---
+
+## Cisco IOS'u Yapılandırmak
+
+Cisco switch'ler fabrikadan çıktıkları varsayılan ayarlarla bile trafiği iletebilirler (Tak-Çalıştır). Ancak Enterprise bir ağda hiçbir cihaz kendi haline bırakılmaz; her switch'i ağın yapısına göre özel olarak yapılandırmak zorundayız.
+Bu kısımda yapılandırma sürecini, yapılandırma dosyalarının mantığını ve bu dosyaların nerede saklandığını öğreneceğiz. 
+
+### Switch'in Beyni: Yapılandırma Modu
+
+Daha önce öğrendiğimiz iki modu hatırlayalım:
+
+* **User EXEC Mode (`>`):** Sadece bakar, zarar vermez.
+* **Privileged EXEC Mode (`#`):** Cihazı yeniden başlatmak dedik vs. bunun gibi daha yetkili operasyonlar yapabilir.
+* **Kritik Fark:** Bu iki moddan hiçbiri cihazın **yapılandırmasını DEĞİŞTİREMEZ!**
+
+Cihaza ne yapacağını ve nasıl yapacağını söylemek, ona yeni kurallar (IP adresi, şifre, VLAN vb.) eklemek için yepyeni bir alana, yani **Configuration Mode** girmemiz gerekir.
+
+### Modlar Arası Hiyerarşi
+
+Aşağıdaki örnekte, en düşük yetkiden en yüksek yetkiye doğru nasıl çıktığımızı ve geri döndüğümüzü (o meşhur asansör mantığını) görüyoruz:
+
+**[CLI Configuration Mode vs EXEC Modes]**
+
+```text
+       [ User Mode ]  (Örn: Switch> )
+             |
+             | (Komut: enable)
+             v
+    [ Privileged Mode ]  (Örn: Switch# )
+             |
+             | (Komut: configure terminal)
+             v
+  [ Configuration Mode ] (Örn: Switch(config)# )
+
+```
+
+**Geri Dönüş Yolları:**
+
+* **`end` veya `Ctrl+Z`:** Yapılandırma modundan direkt olarak bir alt kata, yani *Privileged Mode'a (`#`)* fırlatır.
+* **`disable`:** Privileged Mode'dan en alt kata, yani *User Mode'a (`>`)* indirir.
+
+### Çok Önemli Bir Uyarı 
+
+> Configuration Mode içerisindeyken bir komut yazıp **Enter** tuşuna bastığın anda, o değişiklik cihazın **Active Configuration File**'a ANINDA işlenir!
+> Cisco'da web sitelerindeki gibi bir "Kaydet veya Uygula" butonu bekleyip sonra aktifleşme durumu yoktur. Enter'a bastığın an sistem değişir. Bu yüzden yapılandırma modunda komut girerken çok dikkatli olmalısın!
+
+## Configuration Submodes ve Contexts
+
+Cihazı yapılandırmaya başlamak için `configure terminal` yazdığında, girdiğin ilk ana kapının adı **Global Configuration Mode**'dur. Burada yazdığın komutlar tüm cihazı etkiler (Örneğin cihazın adını değiştirmek gibi).
+Ancak sadece belirli bir parçayı (örneğin sadece 1. portu veya sadece konsol kablosunu) yapılandırmak istersen, o parçanın "Odak Noktasına" yani **Context** içine girmen gerekir.
+Bu arada "Context-setting" (Bağlam belirleme) resmi bir Cisco terimi değildir. Submodes'ın mantığını kafanda daha iyi oturtman için bir benzetme olarak kullanılır.
+Bir alt moda girdiğinde, o modda yazdığın komutlara **Subcommands** denir. Ve en güzeli; bir alt moddayken `?` (Yardım) tuşuna basarsan, IOS sana binlerce komutu değil, sadece **o an bulunduğun alt moda ait** komutları gösterir!
+
+
+### Modlar Arasında Gezinme 
+
+Aşağıdaki çıktı, bir ağ uzmanının cihazın adını, konsol şifresini ve bir portun hızını ayarlarken modlar arasında nasıl gezindiğini gösteriyor:
+
+```text
+IOU1#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+IOU1(config)#hostname Berkay
+Berkay(config)#line console 0
+Berkay(config-line)#password abc123
+Berkay(config-line)#interface Ethernet0/0
+Berkay(config-if)#description PC-1-Connection
+Berkay(config-if)#exit
+Berkay(config)#
+```
+
+### Satır Satır Neler Oldu?
+
+CCNA sınavında ve sahada nerede olduğunu anlamanın tek yolu, sol taraftaki **Parantez İçindeki Yazıları** okumaktır:
+
+1. **`IOU1# configure terminal`**
+* *Aksiyon:* Patron modundan (`#`), ana yapılandırma moduna geçiş yapıyoruz.
+
+2. **`IOU1(config)# hostname Berkay`**
+* *Durum:* **`(config)`** yazısı bize **Global Mode**'da olduğumuzu söyler. `hostname` komutuyla cihazın adını anında "Berkay" yapıyoruz. Farkedersen alt satırda isim anında değişti!
+
+3. **`Berkay(config)# line console 0`**
+* *Aksiyon:* Konsol portunun içine (submode) giriyoruz.
+
+4. **`Berkay(config-line)# password abc123`**
+* *Durum:* Prompt **`(config-line)`** oldu! Yani artık konsol hattındayız. Burada yazdığımız `password abc123` komutu sadece konsol girişini etkiler (Bu bir Line Subcommand'dir).
+
+5. **`Berkay(config-line)# interface Ethernet 0/0`**
+* *Aksiyon:* Konsol modundan çıkmadan, doğrudan `Ethernet 0/0` portunun içine atlıyoruz.
+
+6. **`Berkay(config-if)# description PC-1-Connection`**
+* *Durum:* Prompt **`(config-if)`** oldu! "if", Interface demektir. Artık portun içindeyiz. `description PC-1-Connection` diyerek o porta açıklama ekliyoruz (Bu bir Interface Subcommand'dir).
+
+7. **`Berkay(config-if)# exit`**
+* *Aksiyon:* **`exit`** komutu, bulunduğun submode'dan seni her zaman bir üst klasöre (Global Mode'a) geri atar. Nitekim son satırda tekrar `Berkay(config)#` imlecini görüyoruz.
+
+## Sık Kullanılan Switch Configuration Modları 
+
+Cihazı yapılandırırken sürekli modlar arasında inip çıkacağız. Nerede olduğunu anlamanın tek yolu, sol taraftaki prompt'u okumaktır.
+Aşağıdaki tablo, sınavda ve sahada en çok kullanacağımız 4 temel modu, o modların promptunu ve o moda girmek için yazman gereken komutu gösteriyor:
+
+### Switch Configuration Modları
+
+| Prompt Nasıl Görünür? | Modun Adı | Bu Moda Hangi Komutla Girilir? |
+| --- | --- | --- |
+| **`hostname(config)#`** | **Global** | `configure terminal` *(Enable modundan sonraki ilk durak)* |
+| **`hostname(config-line)#`** | **Line** (Hat/Bağlantı) | `line console 0` (Fiziksel konsol kablosu için) ve `line vty 0 15` (Uzaktan Telnet/SSH erişimi için) |
+| **`hostname(config-if)#`** | **Interface** (Arayüz/Port) | `interface type number` *(Örn: interface Ethernet 0/0)* |
+| **`hostname(vlan)#`** | **VLAN** (Sanal Ağ) | `vlan number` *(Örn: vlan 10)* |
+
+## Modlar Arasında Geçiş Yapmak (Büyük Harita)
+
+İşte GNS3'te veya gerçek bir cihazda kaybolmamanı sağlayacak o efsanevi harita! Hangi odadan nereye nasıl gidilir, nasıl geri dönülür, adım adım burada:
+
+```text
+                                [ Enable Mode ]
+                                      |
+                             (configure terminal)
+                                      |
+                                      v
++-----------------------------------------------------------------------------+
+|                            [ Global Config Mode ]                           |
++-----------------------------------------------------------------------------+
+       |                  |                    |                    |
+ (interface x/y)       (vlan x)        (line console 0)     (line vty 0 15)
+       |                  |                    |                    |
+       v                  v                    v                    v
++--------------+   +--------------+    +--------------+     +--------------+
+| Interface    |   | VLAN         |    | Console Line |     | VTY Line     |
+| Mode         |   | Mode         |    | Mode         |     | Mode         |
++--------------+   +--------------+    +--------------+     +--------------+
+       |                  |                    |                    |
+       | (exit)           | (exit)             | (exit)             | (exit)
+       +------------------+--------------------+--------------------+  
+                                      |
+                               (Geri Dönüş Yolu)
+
+```
+
+### Kurallar ve Kısayollar
+
+Haritaya bakarak hareket ederken şu kuralları adın gibi bilmelisin:
+
+1. **Bir Üst Kata Çıkmak (`exit`):** Submode'lardan (Interface, VLAN vb.) sadece bir adım geriye, yani Global Config moduna dönmek istersen `exit` yazarsın.
+2. **En Başa Dönmek (`End` veya `Ctrl-Z`):** Hangi alt modun ne kadar derininde olursan ol, `End` yazarak veya `Ctrl-Z` kombinasyonuyla anında tüm yapılandırma modlarından çıkıp **Enable Mode'a** (`#`) fırlarsın.
+3. **Doğrudan Geçiş (Kısayol):** Bir alt moddan diğerine geçerken önce `exit` ile Global moda dönmene **GEREK YOKTUR!** * *Örneğin:* Interface modundayken `(config-if)#` doğrudan `line console 0` yazarsan, cihaz seni anında Console moduna ışınlar. Bu sana inanılmaz hız kazandırır!
+
+## Global Komut mu, Subcommand mı? 
+
+GNS3'te komut yazarken aklına hep şu soru gelecek: *"Ben bu ayarı Global modda mı yapmalıyım, yoksa bir alt moda (Interface, Line) girmeli miyim?"*
+
+Bunun ezberlenecek kesin bir kuralı yoktur ama **networkçü mantığı** çok basittir:
+
+* **Global Komutlar:** Bütün switch'i ilgilendiren ve cihaz başına **sadece bir kez** ayarlanabilen parametrelerdir.
+* *Örnek:* `hostname` komutu. Bir switch'in sadece tek bir adı olabilir. Bu yüzden bu komut doğrudan `(config)#` modunda çalıştırılır.
+
+* **Alt Komutlar (Subcommands):** Cihazın içinde birden fazla bulunan, ayrı ayrı yönetilmesi gereken parçalara özel ayarlardır.
+* *Örnek:* `description` komutu. Bir switch'te 48 tane port olabilir ve hepsinin açıklaması birbirinden farklı ayarlanabilir. Bu yüzden açıklama ayarı genel modda yapılmaz; ilgili portun içine girilir `(config-if)#` ve sadece o porta özel olarak uygulanır.
+
