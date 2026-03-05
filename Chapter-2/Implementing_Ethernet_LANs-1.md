@@ -724,6 +724,37 @@ Berkay#show startup-config
 ! 
 hostname IOU1       <-- (NVRAM'in dünyadan haberi yok, Hâlâ IOU1 olarak bekliyor)
 !
-
 ```
 
+## Yapılandırma Dosyalarını Kopyalama ve Silme 
+
+Yaptığımız tüm yapılandırmalar `running-config` dosyasını günceller. Eğer cihaz güç kaybederse veya yeniden başlatılırsa, bu dosya tamamen silinir. Emeğimizin boşa gitmemesi ve cihazın bir sonraki açılışında bu ayarları hatırlaması için bu anlık dosyayı, kalıcı hafızaya (NVRAM) kopyalamamız gerekir.
+
+### Kopyalama İşlemi
+
+Ağ dünyasında "Kaydet" butonunun komut satırındaki karşılığı tam olarak şudur:
+
+`Switch# copy running-config startup-config`
+
+* **Ne İşe Yarar?** Bu EXEC komutu, RAM'de şu an aktif olarak çalışan `running-config` dosyasının birebir kopyasını alır ve NVRAM'in içindeki eski `startup-config` dosyasının üzerine yazar. Artık cihazın fişini gönül rahatlığıyla çekebilirsin!
+
+### Hafızayı Silmek
+
+GNS3'te veya laboratuvarda çalışırken bazen işler o kadar sarpa sarar ki, "Aman be, en baştan sıfırdan yapılandıracağım!" dersin. Cihazın mevcut yapılandırmasından tamamen kurtulmak ve tertemiz bir başlangıç yapmak için kalıcı hafızadaki (NVRAM) `startup-config` dosyasını silmen gerekir.
+
+Bunun için kullanabileceğin **3 farklı ve efsanevi komut** vardır (Üçü de birebir aynı işi yapar):
+
+1. `Switch# write erase` *(Eski ama pratik komuttur)*
+2. `Switch# erase startup-config`
+3. `Switch# erase nvram:`
+
+> Sınavda karşına "running-config nasıl silersin?" diye bir tuzak soru gelebilir.
+> *Cevap:* Cisco IOS'ta `running-config` dosyasının içini tek hamlede temizleyen bir komut **YOKTUR!**
+> **Peki cihazı tamamen nasıl sıfırlarız?**
+> 1. Önce kalıcı hafızayı silersin: `erase startup-config`
+> 2. Sonra cihazı yeniden başlatırsın: `reload`
+> Cihaz kapanıp açıldığında NVRAM'e bakar, bomboş olduğunu görür ve RAM'e (running-config) yükleyecek hiçbir şey bulamadığı için karşına sıfır, tertemiz bir cihaz olarak çıkar!
+
+### `reload` Command (Yeniden Başlatma)
+
+Bilgisayar dünyasında (Windows/Mac) kullandığımız "Reboot" veya "Restart" kavramının Cisco IOS dilindeki karşılığı **`reload`** komutudur. Cihazın yazılımını baştan aşağı yeniden başlatır.
