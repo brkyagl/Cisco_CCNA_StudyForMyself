@@ -615,3 +615,115 @@ Bunun ezberlenecek kesin bir kuralı yoktur ama **networkçü mantığı** çok 
 * **Alt Komutlar (Subcommands):** Cihazın içinde birden fazla bulunan, ayrı ayrı yönetilmesi gereken parçalara özel ayarlardır.
 * *Örnek:* `description` komutu. Bir switch'te 48 tane port olabilir ve hepsinin açıklaması birbirinden farklı ayarlanabilir. Bu yüzden açıklama ayarı genel modda yapılmaz; ilgili portun içine girilir `(config-if)#` ve sadece o porta özel olarak uygulanır.
 
+## Switch Configuration Dosyalarını Saklamak
+
+Bir switch'i yapılandırdığında, cihazın bu kuralları anında kullanmaya başlaması gerekir. Ancak daha da önemlisi, cihazın gücü kesildiğinde mesela elektrik gittiğinde bu yapılandırmayı kaybetmemesidir.
+Cisco switch'ler, verileri anlık olarak kullanmak için **RAM** kullanır. Ancak RAM'in çok büyük bir olayı vardır: Switch yeniden başlatıldığında veya elektrik kesildiğinde içindeki her şeyi unutur!
+İşte bu yüzden Cisco switch'ler, gücü kesildiğinde bile bilgiyi koruyabilen ve **hiçbir hareketli parçası olmayan** (geleneksel sabit diskler gibi dönen diskleri olmayan) kalıcı hafıza türleri kullanır. 
+Hareketli parçalardan kaçınmak, cihazın arıza yapma ihtimalini düşürür ve "Açık kalma / Erişilebilirlik" süresini zirveye taşır.
+
+### Cihazın 4 Farklı Beyin Lobu 
+
+Sınavda ve sistem odasında bir cihazın tam olarak neresine müdahale ettiğini bilmek zorundasın. İşte bir Cisco switch'in içindeki o 4 temel hafıza türü ve görevleri:
+
+1. **RAM (Bazen DRAM - Dynamic RAM olarak da bilinir):**
+* Tıpkı bilgisayarındaki gibi cihazın **Çalışma Hafızasıdır.**
+* O an cihazda aktif olarak çalışan, bizim müdahale ettiğimiz **Running (Active) Configuration File** tam olarak burada tutulur. Elektrik giderse, buradaki her şey silinir.
+
+2. **Flash Memory:**
+* Cihazın içindeki bir çip veya tak-çıkar bir hafıza kartı olabilir.
+* En büyük görevi, cihazın işletim sistemi olan **Cisco IOS imajlarını** saklamaktır. Switch açıldığında işletim sistemini varsayılan olarak buradan çeker. Ayrıca yapılandırma dosyalarının yedeklerini saklamak için de harika bir yerdir.
+
+3. **ROM (Read-Only Memory - Sadece Okunabilir Bellek):**
+* Cihazın güç tuşuna ilk bastığında devreye giren **Bootstrap** programını barındırır.
+* Bu ufak program uyanır, Flash bellekteki asıl Cisco IOS imajını bulur ve onu çalışması için RAM'e yükleme sürecini yönetir. IOS, RAM'e yüklendikten sonra kontrolü tamamen eline alır.
+
+4. **NVRAM (Nonvolatile RAM - Uçucu Olmayan RAM):**
+* Switch ilk açıldığında veya yeniden başlatıldığında yüklenmesi gereken o meşhur **Startup Configuration File** burada saklanır. Elektrik gitse bile içindeki ayarlar asla silinmez!
+
+
+### Cisco Switch Memory Tipleri
+
+Aşağıdaki örnek, bu 4 kritik memory türünü ve içlerinde tam olarak ne saklandığını beynine kazıman için en net haritadır:
+
+**[Cisco Switch Memory Tipleri]**
+
+```text
++------------------------------------+   +------------------------------------+
+|                RAM                 |   |               Flash                |
+|  (Çalışma Hafızası ve o an aktif   |   |  (Cisco IOS Yazılımı / İşletim     |
+|   olan Running Configuration)      |   |   Sistemi burada yatar)            |
++------------------------------------+   +------------------------------------+
+
++------------------------------------+   +------------------------------------+
+|                ROM                 |   |               NVRAM                |
+|  (Cihazı ilk uyandıran Bootstrap   |   |  (Kalıcı Başlangıç Ayarları -      |
+|   Programı burada bulunur)         |   |   Startup Configuration)           |
++------------------------------------+   +------------------------------------+
+
+```
+
+## Running vs. Startup Config 
+
+Cisco IOS, yazdığımız o tonla komutu havada bırakmaz; bunları özel **Configuration Files**'ta saklar doğal olarak. Ancak sistemde tek bir dosya yoktur; biri anlık operasyonu yönetirken, diğeri cihazın hafızasını koruyan bir "yedek/başlangıç" dosyasıdır.
+
+Sistem odasında ter dökmemek için bu iki dosyanın farkını adın gibi bilmelisin:
+
+### İki Ana Cisco IOS Yapılandırma Dosyası
+
+| Dosya Adı | Nerede Saklanır? | Amacı ve Görevi |
+| --- | --- | --- |
+| **`startup-config`** | **NVRAM** | **Başlangıç Ayarları:** Cihazın fişini çekip taksan bile silinmez. Switch her yeniden başlatıldığında, ayağa kalkarken ilk olarak bu dosyayı okur ve sistemi buna göre kurar. |
+| **`running-config`** | **RAM** | **Çalışan/Aktif Ayarlar:** O an cihazda aktif olarak iş yapan, trafiği yöneten dosyadır. `configure terminal` ile yapılandırma moduna girip yazdığın her komut **ANINDA ve SADECE** bu dosyayı değiştirir. Elektrik giderse, bu dosyadaki her şey buharlaşır! |
+
+Yapılandırma modundayken (Örn: `Switch(config)#`) yaptığın hiçbir değişiklik doğrudan NVRAM'e (`startup-config`) **GİTMEZ!** Sadece RAM'deki `running-config` dosyasını güncellersin. Eğer o an biri gelir de switch'in fişini çekerse, yaptığın tüm o harika ayarlar sonsuza dek kaybolur.
+
+### Sistemde İspat Ediyoruz
+
+Söylediğimiz bu altın kuralı GNS3'te bizzat test edelim. Elimizde adı `hannah` olan bir switch var. Bu ismin sadece RAM'de mi yoksa kalıcı hafızada da mı değiştiğini adım adım izliyoruz:
+
+**Adım 1: Mevcut Durumu Kontrol Ediyoruz (İki dosya da aynı)**
+Önce anlık ayarlara (RAM) ve başlangıç ayarlarına (NVRAM) bakıyoruz. İkisinde de cihazın adı `IOU1` olarak görünüyor:
+
+```text
+IOU1#show running-config
+! 
+hostname IOU1
+! 
+
+IOU1#show startup-config
+! 
+hostname IOU1
+! 
+
+```
+
+**Adım 2: Operasyon Başlıyor (Adı Değiştiriyoruz)**
+Global yapılandırma moduna girip cihazın adını `Berkay` yapıyoruz. Enter'a bastığımız anda promptun anında değiştiğine dikkat et:
+
+```text
+IOU1#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+IOU1(config)#hostname Berkay
+Berkay(config)#exit
+Berkay#
+```
+
+*(Artık cihazın adı anında Berkay oldu! Ama bu değişiklik nereye gitti? Sadece RAM'e!)*
+
+**Adım 3: Gerçeği Ortaya Çıkarıyoruz (Kalıcı vs. Geçici)**
+Değişiklikten sonra dosyaların içine tekrar bakıyoruz:
+
+```text
+Berkay#show running-config
+! 
+hostname Berkay       <-- (RAM güncellendi, cihaz artık Berkay olarak çalışıyor)
+!
+
+Berkay#show startup-config
+! 
+hostname IOU1       <-- (NVRAM'in dünyadan haberi yok, Hâlâ IOU1 olarak bekliyor)
+!
+
+```
+
