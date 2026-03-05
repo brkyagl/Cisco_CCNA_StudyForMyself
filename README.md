@@ -19,6 +19,7 @@ Bu repository, Wendell Odom'un **Official Cert Guide** müfredatına sadık kala
 
 ### 🔹 Bölüm 2: Ethernet LAN Uygulamaları (Implementing Ethernet LANs)
 - [ ] [**Bölüm 4:** Command-Line Interface (CLI) Kullanımı](./Chapter-2/Implementing_Ethernet_LANs-1.md)
+    >  [**PDF :** Command-Line Interface (CLI) Kullanımı (23. Sayfa)](./Chapter-2/Implementing_Ethernet_LANs-1.pdf) 
 - [ ] **Bölüm 5:** Ethernet LAN Switching Analizi
 - [ ] **Bölüm 6:** Temel Switch Yönetimi Konfigürasyonu
 - [ ] **Bölüm 7:** Switch Interface Konfigürasyonu ve Doğrulama
