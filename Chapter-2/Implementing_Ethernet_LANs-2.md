@@ -106,3 +106,55 @@ Diyelim ki Berkay, Irem'e bir mesaj (Unicast Frame) göndermek istiyor. Switch'i
 ### Büyük Ağlarda Bağımsızlık İlkesi
 
 Eğer ağda birden fazla switch varsa, her switch sadece ama **sadece kendi MAC Address Table'ına bakar.** Her biri birbirinden bağımsız kararlar alarak Frame'i elden ele nihai hedefe ulaştırır.
+
+## Multi-Switch Forwarding (Birden Fazla Switch ile İletişim)
+
+Ağa ikinci bir switch (SW2) eklediğimizde topolojimiz biraz değişir. Diyelim ki Berkay (SW1'de) bu sefer X'e (SW2'de) bir Frame göndermek istiyor. X'in Destination MAC adresi `0200.3333.3333`.
+Burada unutmamamız gereken o altın kural devreye giriyor: **Her switch sadece kendi MAC Address Table'ından sorumludur!** SW1, X'in tam olarak hangi cihazın hangi portuna bağlı olduğunu bilmez; sadece o Frame'i X'e ulaştırmak için kendi üzerinden hangi Interface'den çıkış yapması gerektiğini bilir.
+
+### Berkay'dan X'e Uzanan Yol
+
+Topolojiyi kafamızda tam olarak şöyle canlandıralım: Berkay ve Irem SW1'e, X ve Y ise SW2'ye bağlı. İki switch birbirine Gigabit (G0/1 ve G0/2) portlarıyla bağlanmış.
+
+```text
+    [Berkay]               [Irem]                [X]                    [Y]
+ (MAC: ...1111)          (MAC: ...2222)    (MAC: ...3333)         (MAC: ...4444)
+       | F0/1                  | F0/2            | F0/3                 | F0/4
+ +----------------------------------+      +----------------------------------+
+ |               SW1                |      |               SW2                |
+ |                                  |      |                                  |
+ |  (G0/1) ======================================= (G0/2)                     |
+ +----------------------------------+      +----------------------------------+
+
+```
+
+### SW1'in Karar Anı (4 Adımda Forwarding)
+
+Berkay'ın bilgisayarından çıkan Frame, SW1'e ulaştığında SW1 kendi iç dünyasında şu 4 adımı işletir:
+
+1. **Geliş:** Frame, SW1'in **F0/1** portundan içeri girer.
+2. **Hedefi Okuma:** SW1, Frame Header'ına bakar ve Destination MAC adresinin `0200.3333.3333` (X) olduğunu görür.
+3. **Tablo Sorgusu:** SW1 hemen kendi tablosuna bakar. Tablosunda şu eşleşmeyi bulur:
+* *"0200.3333.3333 MAC adresine gitmek istiyorsan, çıkış kapın G0/1 portudur!"*
+4. **Forward:** SW1 hiç tereddüt etmeden Frame'i **G0/1** Interface'inden dışarı, yani SW2'ye doğru Forward eder.
+
+### Arka Plandaki Tablolar 
+
+Aşağıdaki tablolar, bu iki switch'in dünyayı nasıl gördüğünü özetliyor. Dikkat et, SW1 için hem X hem de Y aynı kapının (G0/1) arkasındadır!
+
+**SW1 MAC Address Table:**
+| MAC Address | Output Interface |
+| :--- | :--- |
+| 0200.1111.1111 (Berkay) | F0/1 |
+| 0200.2222.2222 (Irem)| F0/2 |
+| **0200.3333.3333 (X)**| **G0/1** |
+| 0200.4444.4444 (Y) | G0/1 |
+
+**SW2 MAC Address Table:**
+| MAC Address | Output Interface |
+| :--- | :--- |
+| 0200.1111.1111 (Berkay) | G0/2 |
+| 0200.2222.2222 (Irem)| G0/2 |
+| 0200.3333.3333 (X)| F0/3 |
+| 0200.4444.4444 (Y) | F0/4 |
+
