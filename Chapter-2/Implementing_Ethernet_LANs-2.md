@@ -261,3 +261,49 @@ Hikaye devam ediyor... Irem 2. Adımda Berkay'a cevap verdiğinde, switch tablos
 
 > Öğrenme (**Learning**) işlemi **HER ZAMAN** Frame'in içindeki **Source MAC** adresine bakılarak gerçekleşir. Switch bu adresi okur ve Frame'in içeri girdiği **Interface**'i o adresin yanına yazarak tablosunu inşa eder.
 
+## Flooding: Unknown Unicast ve Broadcast Frame'ler
+
+Switch'in MAC Address Table'ı tamamen boşken (veya hedef cihazın adresi henüz öğrenilmemişken) kapıdan içeri bir Frame girerse ne olur? Switch bu Frame'in Destination MAC adresini okur, tablosuna bakar ve hiçbir eşleşme bulamaz.
+İşte hedefi henüz switch tarafından bilinmeyen bu tarz teke-tek frame'lere **Unknown Unicast Frame** denir.
+
+### Kaba Kuvvet Mantığı: Flooding Nedir?
+
+Switch, bir Unknown Unicast Frame ile karşılaştığında asla paketi drop etmez. Bunun yerine **Flooding** kuralını işletir:
+Eğer switch paketi nereye göndereceğini bilmiyorsa, **Frame'in geldiği Interface HARİÇ, diğer tüm portlardan Frame'in birer kopyasını dışarı iletir!**
+"Nereye göndereceğimi bilmiyorsam, her yere gönderirim; elbet doğru kişiye ulaşır!" Hedef cihaz bu Frame'i aldığında büyük ihtimalle bir "Cevap" gönderecektir. 
+O cevap geri geldiğinde switch anında o cihazın Source MAC adresini okur, öğrenir ve tabloya yazar. Artık o cihaz bir "Known Unicast" olmuştur ve bir daha asla Flooding yapılmaz!
+
+### Broadcast Frame'ler de Sel Olup Akar
+
+Sadece hedefini bilmediği paketleri değil, ağdaki *herkese* gitmesi için özel olarak tasarlanmış **Broadcast Frame**'leri de switch aynı şekilde Flood eder. Bir Frame'in Destination MAC adresi `FFFF.FFFF.FFFF` ise, bu bir Broadcast'tir ve switch bunu geldiği port hariç tüm portlardan ağa basar.
+
+### Flooding Operasyonu 
+
+Berkay ilk Frame'i yolladığında switch'in dünyasında tam olarak şu 2 adım yaşanır:
+
+**Durum 0: Tablo Bomboş**
+
+```text
+Adres Tablosu: Frame Gönderilmeden Önce
+-------------------------------------------
+Address:            Output
+(Empty)             (Empty)
+
+```
+
+**Adım 1: Berkay Frame'i Gönderiyor**
+Berkay (`0200.1111.1111`), Irem'e (`0200.2222.2222`) gitmesi için Frame'i yollar. Frame switch'in **F0/1** portundan içeri girer.
+
+* *Not:* Switch bu anı yakalar yakalamaz Berkay'ın MAC adresini F0/1 olarak öğrenir, ama konumuz şu an hedefe nasıl ulaşacağı.
+
+**Adım 2: Karar Anı ve Flooding**
+Switch, Destination MAC adresine (`0200.2222.2222`) bakar. Tablo o an boş olduğu için (Unknown Unicast), switch şu tarihi kararı verir:
+*"Bu Irem kim, nerede hiçbir fikrim yok! O yüzden bu Frame'in kopyalarını alıyorum ve Berkay'ın geldiği kapı (F0/1) HARİÇ diğer herkese yolluyorum!"*
+
+* Switch Frame'i alır ve aynı anda şu portlardan dışarı basar:
+* **F0/2** (Irem'e gider - Doğru Hedef!)
+* **F0/3** (X'e gider - Gereksiz Trafik)
+* **F0/4** (Y'ye gider - Gereksiz Trafik)
+
+* *Sonuç:* Irem paketi alır ve işler. X ve Y ise paketi alır, "Bu bana gelmemiş" der ve kendi içlerinde drop ederler. Irem cevap verdiğinde ise switch artık Irem'in F0/2'de olduğunu öğrenecek ve bir sonraki sefer sadece ona gönderecektir!
+
