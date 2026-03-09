@@ -305,5 +305,60 @@ Switch, Destination MAC adresine (`0200.2222.2222`) bakar. Tablo o an boş oldu�
 * **F0/3** (X'e gider - Gereksiz Trafik)
 * **F0/4** (Y'ye gider - Gereksiz Trafik)
 
-* *Sonuç:* Irem paketi alır ve işler. X ve Y ise paketi alır, "Bu bana gelmemiş" der ve kendi içlerinde drop ederler. Irem cevap verdiğinde ise switch artık Irem'in F0/2'de olduğunu öğrenecek ve bir sonraki sefer sadece ona gönderecektir!
+## Loopları Önlemek: Spanning Tree Protocol (STP) Devrede!
+
+Bir LAN switch'in 3. ana görevi **Loopları yani döngüleri Engellemek**'tir. Kurumsal ağlarda cihazlar çökmesin diye switch'leri birbirine yedekli kablolarla bağlarız (Örneğin 3 switch'i üçgen şeklinde bağlamak gibi).
+Ancak STP diye bir protokol olmasaydı, az önce öğrendiğimiz o **Flooding** işlemi, fiziksel olarak yedekli bağlanmış bu Ethernet ağlarında **sonsuz bir Loop'a** girerdi!
+
+### Berkay'dan Irem'e Giden Sonsuz Loop
+
+Diyelim ki 3 switch birbirine yedekli bağlı. Berkay, Irem'e bir Frame gönderiyor. Fakat ufak bir sorun var: **Irem'in bilgisayarı kapalı!**
+
+1. Irem kapalı olduğu için hiçbir switch onun MAC adresini henüz öğrenememiştir (Tablolar Irem için boştur).
+2. Berkay'ın Frame'i ilk switch'e gelir. Switch bakar, hedefi bulamaz ve ne yapar? **Flood eder!** (Geldiği port hariç her yere yollar).
+3. Frame diğer iki switch'e ulaşır. Onlar da Irem'i bilmez, onlar da Flood eder!
+4. Frame'ler kablolardan dönüp dolaşıp ilk switch'e geri gelir. İlk switch "Aaa yeni paket gelmiş, hedefi bilmiyorum, tekrar Flood edeyim!" der.
+5. *Sonuç:* Bu Unknown Unicast Frame o üç switch arasında **SONSUZA DEK** dönmeye başlar! Saniyeler içinde ağ kitlenir ve kullanılamaz hale gelir.
+
+### STP'nin Çözümü: Portları Susturmak
+
+Yedekli topolojiler harikadır ama bu Loop kabusunu engellememiz şart. İşte bu yüzden tüm switch'lerde Layer 2 Loop'larını engellemek için **STP** çalışmalıdır.
+STP, arka planda bir matematik hesabı yapar ve ağı Loop'suz bir hale getirmek için switch'lerin Interface'lerini iki temel durumdan birine zorlar:
+
+* **Forwarding State (İletim Durumu):** Interface normal çalışır; Data Frame'lerini alabilir ve gönderebilir.
+* **Blocking State (Bloklama Durumu):** İşte hayat kurtaran hamle! STP, sonsuz döngüyü kırmak için yedek yollardan birini mantıksal olarak kapatır. Bu port Data Frame'lerini **iletemez ve alamaz.** Böylece fiziksel olarak yedekli kablolarımız olsa bile, mantıksal olarak ağda her zaman **sadece TEK BİR aktif yol** bulunur! (Tabii STP'nin tek kötü yanı, o bloklanan yedek kabloların boşta yatmasıdır. İleride bu trafiği nasıl dengeleyeceğimizi de öğreneceğiz).
+
+Cisco ve IEEE dünyasında, STP konusu açıldığında **Bridge** ve **Switch** kelimeleri birebir aynı anlama gelir. "Root Bridge" dediklerinde aslında "Root Switch"ten bahsettiklerini anlayacaksın! (Eskiden switch'lere bridge denirdi, isim oradan miras kalmıştır).
+
+Şimdi buraya kadar geldiğimize göre toplu bir özeti yapalım...
+
+## LAN Switching (Büyük Algoritma Özeti)
+
+Bir switch'in hayatı temelde şu 3 adımlık kusursuz mantıktan ibarettir:
+
+### Adım 1: Forwarding & Filtering
+
+Switch'ler, bir Frame'i nereye yollayacaklarına karar verirken her zaman **Destination MAC Address**'e (Hedefe) bakarlar:
+
+* **A. Flooding:**
+Eğer hedeflenen MAC adresi bir **Broadcast**, **Multicast** veya **Unknown Unicast** (yani MAC tablosunda henüz listelenmemiş, bilinmeyen bir hedef) ise; switch o Frame'i Flood eder. *(Geldiği Interface HARİÇ, tüm portlardan dışarı yollar).*
+* **B. Bilinen Hedefe Teslimat (Known Unicast):**
+Eğer hedeflenen MAC adresi zaten MAC tablosunda bulunuyorsa, switch şu iki ihtimali değerlendirir:
+* **i. Forward:** MAC tablosunda yazan çıkış portu, Frame'in içeri girdiği Interface'ten **farklıysa**, switch Frame'i sadece o çıkış portundan dışarı Forward eder.
+* **ii. Filter:** *(İşte en kritik ve yeni detay!)* Eğer MAC tablosunda yazan çıkış portu, Frame'in içeri girdiği Interface ile **aynıysa**, switch o Frame'i Filter eder! Yani paketi görmezden gelir, çöpe atar ve hiçbir yere Forward etmez. *(Bu durum genelde switch'in bir portuna Hub bağlıysa ve cihazlar kendi aralarında o Hub üzerinden haberleşiyorsa yaşanır; switch gereksiz yere o Frame'i ağın geri kalanına sokmaz).*
+
+### Adım 2: Learning MAC Addresses
+
+Switch'ler, o meşhur MAC Address Table kayıtlarını oluşturmak için şu mantığı kullanır:
+
+* **A. Kaynağı Oku:** İçeri giren her Frame için, **Source MAC Address**'i (Kaynağı) inceler ve o Frame'in hangi **Interface**'ten içeri girdiğini hafızasına not eder.
+* **B. Tabloya Yaz:** Eğer bu Source MAC adresi tabloda zaten yoksa, o MAC adresini ve öğrenildiği Interface'i anında tabloya ekler.
+
+### Adım 3: Loop Engelleme - STP
+
+Switch'ler, yedekli kablolamalarda o ölümcül **Loop**'ları engellemek için **STP (Spanning Tree Protocol)** kullanırlar.
+
+* STP, ağdaki bazı Interface'leri zorla **Block** durumuna çeker. Block durumundaki bir Interface, hiçbir Frame'i gönderemez veya alamaz. Böylece ağda sadece tek bir aktif yol kalır ve flood frameleri sonsuz bir döngüye girip ağı çökertemez.
+
+---
 
