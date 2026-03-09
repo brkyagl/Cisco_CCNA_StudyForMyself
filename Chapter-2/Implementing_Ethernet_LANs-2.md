@@ -197,3 +197,67 @@ Buraya kadar işlediğimiz tüm örneklerde dikkatin çektiyse switch'lerin tabl
 
 Bir switch, eline geçen bir "Known Unicast Frame"i **SADECE TEK BİR PORTTAN** (tabloda yazan o spesifik Interface'ten) dışarı Forward eder. Diğer tüm portları Filter eder.
 
+## Learning MAC Addresses (Switch'in Dedektiflik Yeteneği)
+
+Çok şükür ki, binlerce cihazın MAC adresini o tablolara tek tek elle yazmak zorunda değiliz! Bunun yerine, her switch ikinci ana görevini yerine getirir: **MAC Address Table'ına koyacağı MAC adreslerini ve Interface'leri dinamik olarak öğrenmek.** Switch bu tabloyu eksiksiz bir şekilde doldurduğunda, az önce gördüğümüz o kusursuz Forwarding ve Filtering kararlarını verebilir.
+
+Peki bu tablo nasıl inşa ediliyor? Switch'in mantığı inanılmaz derecede basittir:
+
+* Interface'den içeri bir Frame girdiğinde, switch anında o Frame'in **Source MAC Address'ine** bakar.
+* Eğer bu Source MAC Address tabloda yoksa, switch anında tabloya yeni bir kayıt açar.
+* Bu kayda da o MAC adresini ve Frame'in içeri girdiği **Interface'i** yazar.
+
+### Switch Learning 
+
+Berkay, Irem, X ve Y'nin olduğu o topolojiyi hatırlıyoruz. Cihaz kutudan yeni çıktı ve henüz hiçbir şey bilmiyor.
+Burada *Forwarding* işlemini tamamen görmezden gel ve sadece *Learning* sürecine odaklan. İşte o 3 kritik an:
+
+**Durum 0: Hiçbir Frame Gönderilmeden Önce**
+Switch'in gücünü verdik. Ağda henüz çıt yok.
+
+```text
+Adres Tablosu: Her İki Frame de Gönderilmeden Önce
+-------------------------------------------
+Address:            Output
+(Empty)             (Empty)
+
+```
+
+**Durum 1: Frame 1 Yola Çıktı (Berkay'dan Irem'e)**
+Berkay (0200.1111.1111), Irem'e bir Frame gönderir. Bu Frame switch'in **F0/1** Interface'inden içeri girer.
+Switch anında Frame'in Source MAC adresine bakar ve "Ha! Berkay benim F0/1 portumdaymış" diyerek tabloyu günceller:
+
+```text
+Adres Tablosu: 1. Frame Sonrası (Berkay'dan Irem'e)
+-------------------------------------------
+Address:            Output
+0200.1111.1111      F0/1
+
+```
+
+**Durum 2: Frame 2 Yola Çıktı (Irem'den Berkay'a Cevap)**
+Şimdi Irem (0200.2222.2222), Berkay'a bir cevap Frame'i gönderiyor. Bu Frame switch'in **F0/2** Interface'inden içeri girer.
+Switch bu sefer yeni Frame'in Source MAC adresine bakar ve "Güzel, Irem de F0/2 portumdaymış" diyerek onu da tabloya ekler:
+
+```text
+Adres Tablosu: 2. Frame Sonrası (Irem'den Berkay'a)
+-------------------------------------------
+Address:            Output
+0200.1111.1111      F0/1
+0200.2222.2222      F0/2
+
+```
+
+Özetle odak noktamız tamamen Learning süreci ve tablonun nasıl adım adım büyüdüğü...
+
+**Adım 1: Berkay'ın Hamlesi ve İlk Kayıt**
+Berkay, Irem'e o ilk Frame'i (1 numaralı) gönderdiğinde, switch hemen Berkay'ın MAC adresini (`0200.1111.1111`) alır ve onu **F0/1** Interface'i ile eşleştirerek tabloya ekler.
+* *Peki Neden F0/1?* Çünkü Berkay'ın gönderdiği Frame, switch'in tam olarak o F0/1 portundan içeri girmiştir.
+* **Switch'in Kusursuz Mantığı:** Switch o saniye kendi kendine şöyle der: *"Source MAC adresi 0200.1111.1111 olan bir cihaz var. Bu Frame benim F0/1 kapımdan içeri girdi. Demek ki benim bakış açıma göre, bu 0200.1111.1111 cihazına ulaşmak istiyorsam çıkış kapım kesinlikle F0/1 olmalıdır!"*
+
+**Adım 2: Irem'in Cevabı ve İkinci Kayıt**
+Hikaye devam ediyor... Irem 2. Adımda Berkay'a cevap verdiğinde, switch tablosuna ikinci bir kayıt daha ekler. Bu sefer Barney'nin MAC adresini (`0200.2222.2222`) alır ve onu **F0/2** Interface'i ile eşleştirir.
+* *Peki Neden F0/2?* Çünkü Irem'in yolladığı Frame de switch'in F0/2 Interface'inden içeri girmiştir.
+
+> Öğrenme (**Learning**) işlemi **HER ZAMAN** Frame'in içindeki **Source MAC** adresine bakılarak gerçekleşir. Switch bu adresi okur ve Frame'in içeri girdiği **Interface**'i o adresin yanına yazarak tablosunu inşa eder.
+
