@@ -256,7 +256,7 @@ Berkay, Irem'e o ilk Frame'i (1 numaralı) gönderdiğinde, switch hemen Berkay'
 * **Switch'in Kusursuz Mantığı:** Switch o saniye kendi kendine şöyle der: *"Source MAC adresi 0200.1111.1111 olan bir cihaz var. Bu Frame benim F0/1 kapımdan içeri girdi. Demek ki benim bakış açıma göre, bu 0200.1111.1111 cihazına ulaşmak istiyorsam çıkış kapım kesinlikle F0/1 olmalıdır!"*
 
 **Adım 2: Irem'in Cevabı ve İkinci Kayıt**
-Hikaye devam ediyor... Irem 2. Adımda Berkay'a cevap verdiğinde, switch tablosuna ikinci bir kayıt daha ekler. Bu sefer Barney'nin MAC adresini (`0200.2222.2222`) alır ve onu **F0/2** Interface'i ile eşleştirir.
+Hikaye devam ediyor... Irem 2. Adımda Berkay'a cevap verdiğinde, switch tablosuna ikinci bir kayıt daha ekler. Bu sefer Irem'nin MAC adresini (`0200.2222.2222`) alır ve onu **F0/2** Interface'i ile eşleştirir.
 * *Peki Neden F0/2?* Çünkü Irem'in yolladığı Frame de switch'in F0/2 Interface'inden içeri girmiştir.
 
 > Öğrenme (**Learning**) işlemi **HER ZAMAN** Frame'in içindeki **Source MAC** adresine bakılarak gerçekleşir. Switch bu adresi okur ve Frame'in içeri girdiği **Interface**'i o adresin yanına yazarak tablosunu inşa eder.
