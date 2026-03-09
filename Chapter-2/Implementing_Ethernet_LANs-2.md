@@ -158,3 +158,42 @@ Aşağıdaki tablolar, bu iki switch'in dünyayı nasıl gördüğünü özetliy
 | 0200.3333.3333 (X)| F0/3 |
 | 0200.4444.4444 (Y) | F0/4 |
 
+## İkinci Switch: SW2'nin Teslimatı 
+
+SW1 görevini yaptı ve Frame'i Backbone üzerinden SW2'ye fırlattı. Şimdi o Frame, SW2'nin **G0/2** Interface'inden içeri giriyor.
+İşte o altın kural burada tekrar parlıyor: **SW2, SW1'in ne yaptığını veya ne düşündüğünü zerre kadar umursamaz!** O sadece elindeki Frame'e ve kendi MAC Address Table'ına bakar.
+
+### SW2'nin 4 Adımlık Kararı
+
+Frame içeri girdiği anda SW2 kendi iç dünyasında şu kusursuz mantığı çalıştırır:
+
+1. **Geliş:** Frame, SW2'nin **G0/2** Interface'inden içeri girer.
+2. **Hedefi Okuma:** SW2, Frame Header'ındaki Destination MAC adresinin `0200.3333.3333` (X) olduğunu okur.
+3. **Tablo Sorgusu:** SW2 hemen kendi tablosuna döner ve eşleşmeyi bulur:
+* *"0200.3333.3333 MAC adresi benim F0/3 numaralı portuma bağlı!"*
+4. **Forward:** SW2, Frame'i **SADECE F0/3** Interface'inden dışarı, yani X'e doğru Forward eder. Görev başarıyla tamamlandı!
+
+```text
+ (G0/2'den Frame Gelir)              [X]                    [Y]
+           |                   (MAC: ...3333)         (MAC: ...4444)
+           v                         ^ F0/3                 | F0/4
+ +-----------------------------------+--+                   |
+ |               SW2                 |  |                   |
+ |    (MAC Address Table'a bakar)    |  +-------------------+
+ +-----------------------------------+
+      0200.3333.3333 = F0/3
+
+```
+
+Eskiden bu işleme sadece "Forwarding" denmez, **"Forward-versus-Filter" (İletmeye Karşı Filtreleme)** kararı denirdi. Neden mi? Çünkü SW2 bu Frame'i F0/3'ten dışarı *Forward* etmeyi seçtiğinde, aslında otomatik olarak Y'nin bağlı olduğu F0/4 gibi diğer tüm portlara bu Frame'i yollamayı reddetmiş, yani o portları **Filter** etmiş olur!
+
+## Known Unicast Frames (Sınavın Bankosu)
+
+Buraya kadar işlediğimiz tüm örneklerde dikkatin çektiyse switch'lerin tabloları mucizevi bir şekilde **doluydu.** Yani switch'ler, aranan MAC adreslerinin hangi portta olduğunu zaten biliyordu.
+İşte ağ dünyasında bu duruma bir isim verilir: **Known Unicast Frames (Bilinen Teke-Tek Frameler).**
+
+* **Unicast:** Frame'in hedefinin tek bir cihaz (spesifik bir MAC adresi) olmasıdır (Broadcast veya Multicast değildir).
+* **Known:** O Destination MAC adresinin, switch'in MAC Address Table'ında **zaten kayıtlı (bulunmuş)** olmasıdır.
+
+Bir switch, eline geçen bir "Known Unicast Frame"i **SADECE TEK BİR PORTTAN** (tabloda yazan o spesifik Interface'ten) dışarı Forward eder. Diğer tüm portları Filter eder.
+
