@@ -81,3 +81,28 @@ Switch, paketi eline aldığı an sadece **Header** kısmındaki şu iki hayati 
 1. **Destination MAC Address (6-byte / 12 Hex karakter):** * "Bu Frame kime gidiyor?" sorusunun cevabıdır. Switch bu adrese bakar ve paketi Forward mı yoksa Filter mı edeceğine karar verir.
 2. **Source MAC Address (6-byte / 12 Hex karakter):** * "Bu Frame kimden geldi?" sorusunun cevabıdır. Switch bu adresi okuyarak cihazın hangi Interface'e bağlı olduğunu MAC Address Table'ına yazar (Learning işlemi).
 
+## Forwarding Known Unicast Frames (Bilinen Hedefe Teslimat)
+
+Bir switch'in kapısından içeri bir Frame girdiğinde, cihaz bu Frame'i ne yapacağına karar vermek için arka planda dinamik olarak oluşturduğu bir tabloya bakar. Bu tablo, hangi MAC adresinin hangi fiziksel Interface'in ucunda olduğunu listeler.
+Sektörde bu tabloya **MAC Address Table** denir. Ancak sınavlarda ve dökümanlarda karşına **Switching Table**, **Bridging Table** veya donanımsal hafıza türünden dolayı **CAM (Content-Addressable Memory) Table** olarak da çıkabilir. Biri sana CAM Table dediğinde MAC tablosundan bahsettiğini anında anlamalısın!
+
+### Berkay ve Irem Senaryosu
+
+Diyelim ki Berkay, Irem'e bir mesaj (Unicast Frame) göndermek istiyor. Switch'in saniyeler içinde işlettiği o kusursuz Forwarding ve Filtering mantığı tam olarak 4 adımdan oluşur:
+
+1. **Geliş:** Berkay'ın bilgisayarından çıkan Frame, switch'in **F0/1** Interface'inden içeri girer. Frame'in üzerindeki Destination MAC Address, Irem'in adresi olan `0200.2222.2222`'dir.
+2. **Sorgu:** Switch anında kendi CAM Table'ına bakar. *"0200.2222.2222 MAC adresi bende var mı?"* diye aratır.
+3. **Forward:** Tabloda bir eşleşme bulur! Tablo der ki: *"Bu MAC adresi F0/2 numaralı Interface'in ucundadır."* Switch hiç tereddüt etmeden Frame'i **SADECE** F0/2 portundan dışarı Forward eder.
+4. **Filter:** Switch paketi F0/2'den yolladığı için, ağdaki diğer cihazları (X ve Y'nin bağlı olduğu F0/3 ve F0/4 portlarını) gereksiz trafikle yormaz. Onlara giden yollarda bu Frame'i **Filter** eder (yani göndermez).
+
+```text
+[Berkay] ---> (F0/1) [ SWITCH ] (F0/2) ---> [Irem] (Destination: 0200.2222.2222)
+                      |
+                 (CAM Table)
+              0200.2222.2222 = F0/2
+
+```
+
+### Büyük Ağlarda Bağımsızlık İlkesi
+
+Eğer ağda birden fazla switch varsa, her switch sadece ama **sadece kendi MAC Address Table'ına bakar.** Her biri birbirinden bağımsız kararlar alarak Frame'i elden ele nihai hedefe ulaştırır.
