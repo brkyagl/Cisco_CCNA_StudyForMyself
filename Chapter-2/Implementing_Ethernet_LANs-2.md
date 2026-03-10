@@ -536,3 +536,153 @@ Tablodaki terimlerin tam karşılıkları şunlardır:
 * **BcastPkts:** O porttan geçen toplam **Broadcast** (herkese gönderim) Frame sayısıdır.
 * **In / Out:** *In* (Gelen Trafik), *Out* (Giden Trafik) istatistiklerini birbirinden ayırır.
 
+## MAC Address Table İçinde Kayıt Bulmak (Filtreleme)
+
+Gerçek bir kurumsal ağda `show mac address-table dynamic` komutunu yazıp Enter'a bastığında, karşına sayfa dolusu yüzlerce, hatta binlerce satırlık bir çıktı dökülür. Üstelik gerçek dünyadaki MAC adresleri bizim örneklerde kullandığımız gibi akılda kalıcı (`0200.1111.1111`) değildir; tamamen rastgele görünen, anlamsız Hex karakter dizilerinden oluşur. O koca listenin içinde tek bir cihazı gözle aramak tam bir kabustur!
+
+Bereket versin ki Cisco IOS, o samanlıkta iğne aramak zorunda kalmayalım diye bize harika bir filtreleme opsiyonu sunuyor.
+
+### Nokta Atışı Arama: `address` Parametresi
+
+Eğer aradığın cihazın MAC adresini tam olarak biliyorsan, komutun sonuna sadece `address` kelimesini ve o MAC adresini eklemen yeterlidir.
+
+### Spesifik Bir MAC Adresini Sorgulamak
+
+Aşağıdaki çıktı, tabloyu filtreleyip sadece bizim aradığımız o tek bir kaydı nasıl ekrana getirdiğini gösteriyor:
+
+```text
+IOU1#show mac address-table address 0050.7966.6803
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+   1    0050.7966.6803    DYNAMIC     Et0/0
+Total Mac Addresses for this criterion: 1
+IOU1#
+
+```
+
+Çıktı formatı, az önce incelediğimiz o tabloyla birebir aynıdır (Vlan, Mac Address, Type, Ports). Tek farkı, switch'in bizi o sayfa dolusu gereksiz satırdan kurtarıp **sadece eşleşen** MAC adresinin satırını önümüze getirmesidir.
+
+### Saha Gerçekliği 
+
+Evet, bu komut harika çalışıyor. **Fakat arıza çözen bir uzman, genelde ağa bağlı o yüzlerce cihazın MAC adresini ezbere bilmez!** Elinde sadece hangi switch portunun hangi kata veya hangi sunucuya gittiğini gösteren bir topoloji diyagramı vardır. MAC adresini bilmediği için bu komutu her zaman kullanamaz.
+
+### Port Bazlı Arama: `interface` Parametresi (Saha Hayat Kurtarıcısı)
+
+Gerçek dünyada troubleshooting yaparken çoğu zaman cihazların MAC adreslerini bilmeyiz. Elimizde sadece hangi switch portunun hangi departmana veya hangi cihaza gittiğini gösteren bir topoloji diyagramı vardır demiştik. 
+*"Acaba bu Et0/0 portunun ucunda kim var?"* diye merak ettiğimizde imdadımıza `interface` parametresi yetişir.
+
+#### Spesifik Bir Interface'i Sorgulamak
+
+Diyelim ki sadece `Ethernet 0/0` üzerinden öğrenilen MAC adreslerini görmek istiyoruz:
+
+```text
+IOU1#show mac address-table dynamic interface Ethernet 0/0
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+   1    0050.7966.6803    DYNAMIC     Et0/0
+Total Mac Addresses for this criterion: 1
+IOU1#
+```
+
+Bu komut sayesinde, eğer bir portun ucunda küçük bir Hub veya başka bir Switch varsa, o tek bir porttan öğrenilen *onlarca* MAC adresini aynı anda, diğer portların gürültüsü olmadan tertemiz bir şekilde görebiliriz!
+
+### VLAN Bazlı Arama: `vlan` Parametresi
+
+Aynı mantıkla, bazen sadece belirli bir ağ segmentindeki (VLAN) cihazları listelemek isteyebilirsin. Tahmin ettiğin gibi, komutun sonuna `vlan` parametresini ve VLAN numarasını eklemek yeterlidir.
+
+#### Spesifik Bir VLAN'i Sorgulamak
+
+Aşağıdaki çıktıda iki farklı senaryo var. İlkinde tüm cihazlarımızın içinde bulunduğu varsayılan `VLAN 1`'i sorguluyoruz. İkincisinde ise ağımızda henüz hiçbir cihazın atanmadığı, var olmayan bir `VLAN 2`'yi sorguluyoruz:
+
+```text
+IOU1#show mac address-table dynamic vlan 1
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+   1    0050.7966.6800    DYNAMIC     Et0/2
+   1    0050.7966.6801    DYNAMIC     Et0/1
+   1    0050.7966.6802    DYNAMIC     Et0/3
+   1    0050.7966.6803    DYNAMIC     Et0/0
+Total Mac Addresses for this criterion: 4
+IOU1#show mac address-table dynamic vlan 2
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+IOU1#
+```
+
+Gördüğün gibi `vlan 1` yazdığımızda o VLAN'e ait tüm dinamik MAC adresleri döküldü. Ancak içi boş olan `vlan 2`'yi sorguladığımızda, switch bize sadece boş bir tablo başlığı döndürdü. Çünkü o VLAN'de henüz hiçbir Frame'in Source MAC adresi öğrenilmemişti (Learning gerçekleşmemişti).
+
+## MAC Adres Tablosunu Yönetme (Eskitme, Temizleme)
+
+Bölümü, switch'lerin MAC Address Table'larını nasıl yönettikleriyle kapatıyoruz. Switch'ler MAC adreslerini öğrenir, ancak bu adresler o tabloda sonsuza dek kalmaz! Bir switch, tablosundaki kayıtları üç temel sebeple siler:
+
+1. **Zaman Aşımı:** Belirli bir süre kullanılmayan kayıtlar silinir.
+2. **Tablonun Dolması:** Hafıza tamamen dolduğunda yeni gelenlere yer açmak için silinir.
+3. **Manuel Temizleme:** Biz ağ uzmanları komut girerek zorla sileriz.
+
+### 1. Zaman Aşımı Mantığı
+
+Switch'ler, belirli bir saniye boyunca hiç kullanılmayan (üzerinden trafik geçmeyen) MAC adresi kayıtlarını tablosundan siler. Birçok switch'te bu default süre **300 saniyedir** (5 dakika).
+
+**Peki bu mekanizma arka planda nasıl çalışır?**
+Switch, kapısından içeri giren her Frame'in **Source MAC Address**'ine bakar.
+
+* Eğer bu yeni bir adres ise, tabloya ekler.
+* Ancak bu kayıt tabloda **zaten varsa**, switch sessiz kalmaz; o kayıt için tuttuğu **Inactivity Timer'ı (Hareketsizlik Sayacını) anında sıfırlar (0'a çeker).**
+* * Her bir kaydın sayacı zamanla yukarı doğru sayar. Eğer bir kaydın sayacı o belirlenen Zaman Aşımı sınırına ulaşırsa, switch o kaydı Timeout eder (tablodan siler).
+*(Örneğin Berkay 5 dakika boyunca ağda hiç konuşmazsa, switch "Berkay galiba gitti" der ve F0/1 portundaki MAC adresini siler).*
+
+### Aging Timer ve Table Count Çıktıları
+
+Aşağıdaki örnekte, switch'in global olarak kullandığı o 300 saniyelik varsayılan değeri ve tablonun kapasite/doluluk oranını görüyoruz:
+
+```text
+IOU1#show mac address-table aging-time 
+Global Aging Time:  300
+Vlan    Aging Time
+----    ----------
+IOU1#
+
+IOU1#show mac address-table count 
+
+Mac Entries for Vlan 1:
+---------------------------
+Dynamic Address Count  : 0
+Static  Address Count  : 0
+Total Mac Addresses    : 0
+
+Total Mac Address Space Available: 183585508
+IOU1# Bunu yazarken 300 saniye dolduğu için tablodan silindiler HASDGASHDHASDJHASJDGAJDS :DDDDD
+```
+
+Bu 300 saniyelik süreyi tüm switch için global olarak veya spesifik bir VLAN için değiştirmek istersen Global Configuration Mode'da şu komutu kullanırsın: `mac address-table aging-time time-in-seconds [vlan vlan-number]`
+
+### 2. CAM Table Dolarsa Ne Olur?
+
+Switch'in MAC Address Table'ı, **CAM (Content-Addressable Memory)** adı verilen, arama yapma kapasitesi inanılmaz yüksek fiziksel bir donanım hafızası kullanır. Ancak bu tablonun boyutu, switch'in donanım modelindeki CAM boyutuna ve ayarlarına bağlı olarak sınırlıdır.
+
+Eğer switch yeni bir MAC adresi eklemeye çalışır ve tablonun **tamamen dolu** olduğunu fark ederse, o 300 saniyelik Aging süresinin dolmasını beklemez! Yer açmak için tablodaki **en eski** kaydı anında siler.
+*(Not: Üstteki `count` çıktısının en son satırına bakarsan, kapasiteyi görürsün.)*
+
+### 3. Clearing (Tabloyu Manuel Temizlemek)
+
+Bazen troubleshooting yaparken veya kabloların yerini değiştirdiğimizde o 300 saniyeyi beklemek istemeyiz. Dynamic olarak öğrenilen MAC adreslerini manuel olarak silmek için `clear mac address-table dynamic` komutunu kullanırız.
+
+> Bu chapter boyunca gördüğümüz tüm `show` komutlarını hem User Mode hem de Enable Mode içindeyken çalıştırabilirsin. Ancak `clear` komutu ağı etkileyen bir işlem olduğu için **SADECE Enable Mode** içinde çalışır!
+
+Eğer tüm tabloyu değil de sadece spesifik yerleri silmek istersen, komutun sonuna şu parametreleri ekleyebilirsin:
+
+* **VLAN'e Göre:** `clear mac address-table dynamic vlan vlan-number`
+* **Interface'e Göre:** `clear mac address-table dynamic interface interface-id`
+* **MAC Adresine Göre:** `clear mac address-table dynamic address mac-address`
