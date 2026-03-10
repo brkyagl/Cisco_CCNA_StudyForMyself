@@ -362,3 +362,177 @@ Switch'ler, yedekli kablolamalarda o ölümcül **Loop**'ları engellemek için 
 
 ---
 
+## Ethernet Switching Doğrulama ve Analizi
+
+Bir Cisco switch, fabrikadan çıktığı anda Frame'leri iletmeye tamamen hazırdır. Tek yapman gereken güç kablosunu takmak ve Ethernet kablolarını bağlamaktır; cihaz anında içeri giren Frame'leri işlemeye başlar. 
+Birden fazla switch'i birbirine bağladığında bile, bu cihazlar kendi aralarında Frame'leri Forward etmeye anında hazırdır.
+Bu "Tak-Çalıştır" davranışının arkasında yatan asıl neden, switch'lerin fabrikadan üzerlerinde yüklü gelen default ayarlardır.
+
+### Switch'lerin Default Ayarları
+
+Mesela Cisco Catalyst switch'lerin kutudan çıktığı gibi Frame işlemeye başlamasını sağlayan kritik varsayılan ayarlar şunlardır (Sınavda bu default durumları bilmek çok önemlidir):
+
+* **Interface Durumları:** Tüm Interface'ler varsayılan olarak aktiftir. Yani kabloyu taktığın an Interface ayağa kalkar ve çalışmaya başlar (Router'lar gibi manuel olarak açmana gerek yoktur).
+* **VLAN Ataması:** Tüm Interface'ler fabrikadan **VLAN 1**'e atanmış olarak gelir.
+* **Hız ve Duplex:** 10/100 ve 10/100/1000 Mbps hızındaki tüm Interface'ler varsayılan olarak **autonegotiation** (otomatik hız ve duplex anlaşması) kullanır.
+* **Karar Mekanizması:** O meşhur MAC **Learning**, **Forwarding** ve **Flooding** algoritmalarının tamamı varsayılan olarak aktif ve çalışır durumdadır.
+* **Loop Engelleme:** Döngüleri engellemek için kullanılan **STP (Spanning Tree Protocol)** varsayılan olarak açıktır.
+
+Bölümün bu ikinci kısmı, switch'lerin bu varsayılan ayarlarla nasıl çalıştığını ve arka planda dönen Ethernet Learning ve Forwarding süreçlerini CLI üzerinden nasıl doğrulayacağımızı inceleyecek.
+
+## MAC Learning'i Göstermek 
+
+Bir switch'in o meşhur MAC Address Table'ını görmek için CLI üzerinde `show mac address-table` komutu kullanılır. 
+Ancak bu komutu tek başına yazarsan, switch sana donanımsal olarak kendi içinde tuttuğu gereksiz (overhead) statik MAC adreslerini de listeler.
+Bizim asıl ilgilendiğimiz şey cihazın ağda **öğrendiği** adreslerdir. Sadece dinamik olarak öğrenilen MAC adreslerini görmek için şu komutu kullanırız:
+
+`IOU1>show mac address-table dynamic`
+
+### Switch'i Sıfırlamak 
+
+Sistem odasında veya GNS3/Packet Tracer'da bir switch'i tam anlamıyla kutudan yeni çıkmış haline getirmek istiyorsan, sadece `startup-config` dosyasını silmek yetmez. VLAN veritabanını da temizlemen gerekir.
+
+İşte bir switch'i tamamen sıfırlayıp isim verme adımları:
+
+1. **`erase startup-config`** (Başlangıç ayarlarını siler)
+2. **`delete vlan.dat`** (VLAN yapılandırma detaylarını kalıcı olarak siler)
+3. **`reload`** (Switch'i yeniden başlatır. Açıldığında tertemiz, boş bir cihaz olarak gelir)
+4. (Opsiyonel) **`hostname Berkay`** (Cihaza anlamlı bir isim verir)
+
+Bu adımları uygulayıp kabloları taktığında, switch anında Forwarding ve Learning işlemlerine başlar.
+
+### CLI Üzerinde MAC Tablosu
+
+Aşağıdaki çıktı, cihazı sıfırladıktan sonra cihazlarının ağda birbirleriyle konuşup switch'in tablolarını nasıl doldurduğunu kanıtlayan tablodur:
+
+```text
+IOU1>show mac address-table dynamic 
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+   1    0050.7966.6800    DYNAMIC     Et0/0
+   1    0050.7966.6801    DYNAMIC     Et0/1
+   1    0050.7966.6802    DYNAMIC     Et0/3
+   1    0050.7966.6803    DYNAMIC     Et0/2
+Total Mac Addresses for this criterion: 4
+IOU1>
+```
+
+### Çıktının Anatomisi
+
+Bu tabloya baktığında bir network uzmanı olarak şunları anında okumalısın:
+
+* **Vlan:** Tüm portlar varsayılan olarak `VLAN 1`'e aittir (Bunu az önce default ayarlarda konuşmuştuk).
+* **Mac Address:** Switch'in ağdan öğrendiği Destination MAC adresleri.
+* **Type:** Bu adreslerin `DYNAMIC` olarak, yani switch tarafından Frame'lerin **Source MAC** kısımları okunarak otomatik öğrenildiğini kanıtlar. Elle (Static) girilmemiştir.
+* **Ports:** O MAC adresine gitmek için switch'in Frame'i hangi Interface'ten dışarı (Forward) atacağını gösterir.
+
+## MAC Address Table Analizi 
+
+CLI üzerinden aldığımız tablo çıktısına bir ağ uzmanı gözüyle baktığımızda, sütunların her biri switch'in o anki durumu hakkında kritik bilgiler verir.
+
+### 1. MAC Address ve Ports Sütunları
+
+Tabloda ilk odaklanmamız gereken yer **MAC Address** ve **Ports** sütunlarıdır. Bu değerler, kafamızda kurduğumuz (veya sistem odasında fiziksel olarak kabloladığımız) topolojiyle birebir eşleşir.
+
+**Verification İçin Kullanılan Topoloji**
+
+```text
+    [Berkay]                     [Irem]
+ (MAC: ...1111)               (MAC: ...2222)
+       | F0/1                       | F0/2
+ +-----------------------------------------+
+ |                  SW1                    |
+ +-----------------------------------------+
+       | F0/3                       | F0/4
+  (MAC: ...3333)               (MAC: ...4444)
+        [X]                          [Y]
+
+```
+
+Tablodaki dört MAC adresi de cihazlarla ve onların bağlı olduğu portlarla (Fa0/1, Fa0/2 vb.) kusursuz bir şekilde eşleşmiştir.
+
+### 2. Type Sütunu
+
+Tablonun başlığındaki **Type** sütunu, switch'in o MAC adresini hafızasına tam olarak nasıl kazıdığını gösterir.
+
+* **DYNAMIC:** Çıktımızdaki tüm adresler bu şekildedir. Yani switch, kapısından içeri giren Frame'lerin **Source MAC** adreslerini okuyarak bu bilgileri tamamen kendi başına, dinamik olarak öğrenmiştir.
+* **STATIC:** "Port Security" gibi bazı güvenlik özellikleri kullanılarak veya bir ağ uzmanı tarafından cihaza manuel bir MAC adresi tanımlandığında, bu sütunda `STATIC` ibaresi yer alır.
+
+### 3. VLAN Sütunu ve İzolasyon Mantığı
+
+Son olarak tablonun en başındaki **VLAN** sütunu, VLAN'lerin (Virtual LAN) switching mantığını nasıl etkilediği konusunda bize çok hayati bir kuralı hatırlatır.
+LAN switch'ler, Ethernet Frame'lerini **SADECE** aynı VLAN içerisinde Forward ederler.
+* **Bunun Anlamı Şudur:** Eğer bir Frame, `VLAN 1`'e atanmış bir porttan (örneğin F0/1) içeri girerse; switch bu Frame'i sadece `VLAN 1`'e ait olan diğer portlardan dışarı **Forward** veya **Flood** eder. Bu Frame, başka bir VLAN'e atanmış hiçbir porta kesinlikle iletilmez.
+
+## Switch Interfaces (Port Durumlarını Doğrulamak)
+
+Cihazın fiziksel kurulumunu yapıp Console üzerinden bağlandıktan sonra, switch üzerindeki tüm Interface'lerin durumunu tek bir bakışta kontrol etmenin en kolay yolu `show interfaces status` komutunu kullanmaktır.
+
+### Interface Status Çıktısı
+
+Aşağıdaki çıktı, benim GNS3'te 4 bilgisayarlı switch'ime aittir.
+
+```text
+IOU1>show interfaces status 
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Et0/0                        connected    1            auto   auto unknown
+Et0/1                        connected    1            auto   auto unknown
+Et0/2                        connected    1            auto   auto unknown
+Et0/3                        connected    1            auto   auto unknown
+Et1/0                        connected    1            auto   auto unknown
+Et1/1                        connected    1            auto   auto unknown
+Et1/2                        connected    1            auto   auto unknown
+Et1/3                        connected    1            auto   auto unknown
+Et2/0                        connected    1            auto   auto unknown
+Et2/1                        connected    1            auto   auto unknown
+Et2/2                        connected    1            auto   auto unknown
+Et2/3                        connected    1            auto   auto unknown
+Et3/0                        connected    1            auto   auto unknown
+Et3/1                        connected    1            auto   auto unknown
+Et3/2                        connected    1            auto   auto unknown
+Et3/3                        connected    1            auto   auto unknown
+```
+
+### Çıktının Anatomisi 
+
+Bir anlığına sadece **Port** ve **Status** sütunlarına odaklanalım:
+
+* **Port İsimlendirmesi:** Cisco switch'ler, portlarını destekledikleri en yüksek hıza göre isimlendirir. Çıktıdaki `Et` kısaltması **Ethernet** anlamına gelir.
+* **Status:** * `connected`: O Interface'e fiziksel bir kablo takılıdır, ucunda çalışan bir cihaz vardır ve port başarıyla aktiftir. (Bunda hepsinde connected(GNS3'ten kaynaklı) ama normalde 4 portta cihaz bağlı olduğu için onlar connected durumunda olmalı).
+* `notconnect`: Port şu an çalışmıyor demektir. Genelde o portta bir kablo olmadığı anlamına gelir. Ancak kablo takılı olduğu halde bu hatayı alıyorsan, fiziksel bir arıza veya başka problemler olabilir.
+
+> Eğer 24 veya 48 portluk koca bir listede kaybolmak istemiyorsan, sadece tek bir portun durumuna bakabilirsin. Örneğin: `show interfaces Et0/0 status` komutu, sadece Et0/0'ın durumunu tek satırda verir.
+> *(Eğer sonundaki "status" kelimesini yazmazsan, switch o Interface hakkında detaylı teknik mesaj döker).*
+
+## Interface Counters (Trafik İstatistiklerini Okumak)
+
+`show interfaces` komutunun tonla farklı opsiyonu vardır. Bunlardan en önemlilerinden biri olan `counters` seçeneği, o Interface üzerinden içeri giren ve dışarı çıkan Frame'lerin istatistiklerini listeler.
+Özellikle ağda bir yavaşlık veya Loop şüphesi varsa, Unicast, Multicast ve Broadcast Frame sayılarının ne kadar arttığını buradan görürüz.
+
+### Interface Counters Çıktısı (Fa0/1 İçin)
+
+```text
+Test# show interfaces f0/1 counters
+
+Port            InOctets    InUcastPkts    InMcastPkts    InBcastPkts
+Fa0/1           122330      3102           6410           718
+
+Port           OutOctets   OutUcastPkts   OutMcastPkts   OutBcastPkts
+Fa0/1           3235055     138862         2940           437
+
+```
+
+### Counters Çıktısının Anatomisi
+
+Tablodaki terimlerin tam karşılıkları şunlardır:
+
+* **Octets:** Byte demektir (1 Octet = 8 bit). O porttan geçen toplam veri miktarını (boyutunu) gösterir.
+* **UcastPkts:** O porttan geçen toplam **Unicast** (teke-tek) Frame sayısıdır.
+* **McastPkts:** O porttan geçen toplam **Multicast** (çoklu gönderim) Frame sayısıdır.
+* **BcastPkts:** O porttan geçen toplam **Broadcast** (herkese gönderim) Frame sayısıdır.
+* **In / Out:** *In* (Gelen Trafik), *Out* (Giden Trafik) istatistiklerini birbirinden ayırır.
+
