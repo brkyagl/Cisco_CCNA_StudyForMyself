@@ -686,3 +686,85 @@ Eğer tüm tabloyu değil de sadece spesifik yerleri silmek istersen, komutun so
 * **VLAN'e Göre:** `clear mac address-table dynamic vlan vlan-number`
 * **Interface'e Göre:** `clear mac address-table dynamic interface interface-id`
 * **MAC Adresine Göre:** `clear mac address-table dynamic address mac-address`
+
+## MAC Address Tables Çoklu Switches 
+
+Bölümü tamamlarken, birden fazla switch'in olduğu bir senaryoda MAC Learning, Forwarding ve Flooding işlemlerinin her bir cihazda nasıl **bağımsız** gerçekleştiğini vurgulamak çok önemlidir.
+
+### İki Switch'li Topoloji Örneği
+
+Aşağıdaki topolojiyi dikkatlice incele ve özellikle port numaralarına odaklan. Kafamız karışmasın diye bu örnekte her iki switch için de farklı port numaraları kullanıldı. 
+*(Gerçekte SW2'nin de F0/1 ve F0/2 portları var ama bu senaryoda onlara hiçbir cihaz bağlanmamış).* Tüm portlar `VLAN 1` içindedir ve sadece `hostname` komutu girilmiş, geri kalan her şey default ayarlardadır.
+
+```text
+    [Berkay]                     [Irem]
+ (MAC: ...1111)               (MAC: ...2222)
+       | F0/1                       | F0/2
+ +-----------------------------------------+
+ |                  SW1                    |
+ |                                         |
+ |                 (G0/1)                  |
+ +--------------------||-------------------+
+                      ||
+                      || Backbone 
+                      ||
+ +--------------------||-------------------+
+ |                 (G0/2)                  |
+ |                                         |
+ |                  SW2                    |
+ +-----------------------------------------+
+       | F0/3                       | F0/4
+  (MAC: ...3333)               (MAC: ...4444)
+        [X]                          [Y]
+
+```
+
+### Bağımsız Tabloların Mantığı
+
+Diyelim ki üstteki cihazlar (Berkay ve İrem), alttaki cihazlarla (X ve Y) iletişim kurdu. Bu durumda her iki switch de ağdaki tüm 4 MAC adresini öğrenir. 
+Ancak tablolarına yazdıkları **çıkış portları** tamamen kendi bakış açılarına göre şekillenir:
+
+* **SW1'in Bakış Açısı:** Berkay ve İrem kendi üzerinde (F0/1, F0/2). Ancak X ve Y'ye gitmek istiyorsa, Frame'leri o aradaki backbone kablosundan, yani **G0/1** Interface'inden dışarı yollamak zorundadır.
+* **SW2'nin Bakış Açısı:** X ve Y kendi üzerinde (F0/3, F0/4). Ancak Berkay ve İrem'e gitmek istiyorsa, Frame'leri kendi backbone portundan, yani **G0/2** Interface'inden dışarı yollamak zorundadır.
+
+### İki Switch'in MAC Tabloları 
+
+İşte o bahsettiğimiz bağımsız kararların CLI üzerindeki net kanıtı. İki switch'in tablosuna da sırayla bakıyoruz:
+
+**SW1'in MAC Adres Tablosu Çıktısı:**
+
+```text
+SW1# show mac address-table dynamic
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+   1    0200.1111.1111    DYNAMIC     Fa0/1
+   1    0200.2222.2222    DYNAMIC     Fa0/2
+   1    0200.3333.3333    DYNAMIC     Gi0/1
+   1    0200.4444.4444    DYNAMIC     Gi0/1
+Total Mac Addresses for this criterion: 4
+
+```
+
+Gördüğün gibi SW1, X (...3333) ve Y (...4444) cihazlarının arkasında SW2 olduğunu bilmez. O sadece *"Bu MAC adreslerine ulaşmak için Frame'i Gi0/1 portundan Forward etmeliyim"* der.
+
+**SW2'nin MAC Adres Tablosu Çıktısı:**
+
+```text
+SW2# show mac address-table dynamic
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+   1    0200.1111.1111    DYNAMIC     Gi0/2
+   1    0200.2222.2222    DYNAMIC     Gi0/2
+   1    0200.3333.3333    DYNAMIC     Fa0/3
+   1    0200.4444.4444    DYNAMIC     Fa0/4
+Total Mac Addresses for this criterion: 4
+
+```
+
+Aynı şekilde SW2 de Berkay (...1111) ve İrem (...2222) için Frame'leri kendi backbone çıkışı olan **Gi0/2** portundan Forward etmesi gerektiğini öğrenmiştir.
