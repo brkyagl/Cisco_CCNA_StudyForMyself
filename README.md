@@ -22,7 +22,7 @@ Bu repository, Wendell Odom'un **Official Cert Guide** müfredatına sadık kala
     >  [**PDF :** Command-Line Interface (CLI) Kullanımı (23. Sayfa)](./Chapter-2/Implementing_Ethernet_LANs-1.pdf) 
 - [ ] [**Bölüm 5:** Ethernet LAN Switching Analizi](./Chapter-2/Implementing_Ethernet_LANs-2.md)
     >  [**PDF :** Ethernet LAN Switching Analizi (21. Sayfa)](./Chapter-2/Implementing_Ethernet_LANs-2.pdf) 
-- [ ] **Bölüm 6:** Temel Switch Yönetimi Konfigürasyonu
+- [ ] [**Bölüm 6:** Temel Switch Yönetimi Konfigürasyonu](./Chapter-2/Implementing_Ethernet_LANs-3.md)
 - [ ] **Bölüm 7:** Switch Interface Konfigürasyonu ve Doğrulama
 
 ### 🔹 Bölüm 3: VLAN ve STP Uygulamaları (Implementing VLANs and STP)
