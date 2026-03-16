@@ -32,3 +32,129 @@ Login Security konusunda şu 4 temel aşamayı adım adım laboratuvarda yapıla
 2. User Mode erişimini cihazın kendi içindeki local kullanıcı adlarıyla korumak.
 3. User Mode erişimini harici bir kimlik doğrulama sunucusuyla korumak.
 4. Uzaktan erişimi, güvensiz Telnet yerine şifreli **SSH (Secure Shell)** ile korumak.
+
+
+## User Modu ve Privileged Modun Güvenliği (Basit Şifrelerle Koruma)
+
+Bir Cisco switch kutusundan ilk çıktığında (Default ayarlardayken), güvenlik politikası şu şekilde çalışır:
+
+* **Console Erişimi:** Cihaza Console kablosuyla fiziksel olarak bağlanan birine tüm kapılar sonuna kadar açıktır. Hiçbir şifre sormadan doğrudan **User Mode**'a, oradan da **Privileged (Enable) Mode**'a geçiş yapabilirsin.
+* **Uzaktan Erişim:** Telnet veya SSH üzerinden uzaktan erişim ise varsayılan olarak tamamen kapalıdır (User Mode'a bile giremezsin).
+
+Bu varsayılan ayarlar, cihazı kutudan çıkarıp ilk yapılandırmayı yaparken harikadır. Ancak cihazı canlı bir ortama aldığında işler değişir! 
+Kendi masandan kalkmadan ağdaki tüm switch'leri yönetebilmek için uzaktan erişimi (Telnet/SSH) açmalı, ama aynı zamanda cihazı "önüne gelenin" değiştirmemesi için bu girişleri şifrelemelisin.
+
+### Simple Shared Passwords (Ortak Şifre Mantığı)
+
+Laboratuvar ortamlarında veya küçük ağlarda en sık kullanılan temel güvenlik yöntemi **Simple Shared Password** (Basit Ortak Şifre) mantığıdır.
+
+* **Nasıl Çalışır?** Bu yöntemde herhangi bir username sorulmaz; sadece bir password istenir.
+* **Neden "Shared" Deniyor?** Çünkü IT ekibindeki herkes (örneğin Berkay, İrem ve sen) cihaza girerken kendinize ait özel bir hesapla değil, tüm ekibin bildiği o ortak şifreyi yazarak giriş yaparsınız.
+
+### Erişim Yolları ve Şifre Türleri
+
+Cihaza nereden bağlandığına göre switch sana farklı şifreler sorar.
+
+1. **Console Password:**
+* Cihazın yanına gidip Console kablosuyla bağlanan kullanıcılardan istenir.
+* CLI üzerinde **`line console`** configuration mode altında ayarlanır.
+
+2. **vty Password (Telnet/SSH Şifresi):**
+* Cihaza ağ üzerinden uzaktan (Telnet veya SSH ile) bağlanan kullanıcılardan istenir.
+* CLI üzerinde sanal terminal anlamına gelen **`line vty`** configuration mode altında ayarlanır.
+
+3. **Enable Password:**
+* Console veya vty üzerinden **User Mode**'a başarılı bir şekilde giren kullanıcının, sistemi değiştirebilmek için **Enable Mode**'a geçmek istediğinde karşısına çıkan o son ve en büyük bariyerdir.
+
+### Erişim Hiyerarşisi 
+
+Kafamızda o erişim haritasını tam olarak şöyle canlandırabiliriz:
+
+```text
+[ Fiziksel Bağlantı ] ---> (Console Password) ---+
+                                                 |
+                                                 v
+                                           [ USER MODE ] ---> (Enable Password) ---> [ ENABLE MODE ]
+                                                 ^
+                                                 |
+[ Uzaktan Bağlantı  ] ---> (vty Password) -------+
+  (Telnet / SSH)
+
+```
+
+### Enable Mode Güvenliği 
+
+Cisco switch'ler, cihazın tüm ayarlarının değiştirilebildiği o en yetkili modu, yani **Enable Mode**'u korumak için **Enable Password** adında ekstra bir shared password daha kullanır.
+
+Bir ağ uzmanının gözünden süreci canlandıralım:
+
+1. Cihazın CLI ekranına başarıyla bağlandın ve **User Mode**'a (`Switch>`) düştün.
+2. Cihazı yapılandırmak için `enable` EXEC komutunu yazıp Enter'a bastın.
+3. Switch anında önüne bir duvar örer ve senden **Enable Password**'ü ister.
+4. Şifreyi doğru girersen, IOS seni tam yetkili **Enable Mode**'a (`Switch#`) geçirir.
+
+### Console Üzerinden Enable Mode'a Geçiş
+
+Diyelim ki sistem odasına girdin, laptop'ını Console kablosuyla switch'e bağladın ve terminal programını (Putty/TeraTerm vb.) açtın. Ekranı uyandırmak için klavyeden `Enter` tuşuna bastığında karşılaşacağın o gerçek saha deneyimi tam olarak şöyledir:
+
+*(Not: Ortak Console şifresinin "abc123", Enable şifresinin ise "root" olarak ayarlandığını varsayıyoruz).*
+
+```text
+(Ağ uzmanı süreci başlatmak için Enter tuşuna basar. Bu satır ekranda görünmez.)
+
+User Access Verification
+
+Password: abc123
+Switch> enable
+Password: root
+Switch#
+
+```
+
+Yukarıdaki CLI çıktısında, anlayabilelim diye yazdığımız şifreler ekranda açıkça gösterildi. Ancak **GERÇEK HAYATTA**, Cisco switch'ler sen klavyede şifreni tuşlarken ekranda hiçbir şey göstermez! (Ekranda `*` işareti bile çıkmaz, imleç sabit durur).
+Arkandan geçen veya omzunun üzerinden ekranına bakan kötü niyetli birinin şifrenin kaç karakter olduğunu bile tahmin etmesini engellemek için. Sen yazmıyormuşsun gibi görünse de switch arka planda tuş vuruşlarını algılar; yazıp Enter'a basman yeterlidir.
+
+### Configuring Simple Passwords 
+
+Console, Telnet (vty) ve Enable Mode için o bahsettiğimiz "Shared Passwords" yapılandırmak aslında çok az komut gerektirir ve mantığı oldukça sezgiseldir.
+Her şifreyi kendi context'i içinde o bağlamı, yani ilgili Configuration Mode altında tanımlamamız gerekir.
+
+#### Şifreleme Konsepti
+
+Kafamızda o yapılandırma haritasını tam olarak şöyle kodluyoruz:
+
+```text
+  [ Console Erişimi ]                         [ Telnet Uzaktan Erişimi ]
+  line console 0                              line vty 0 15
+  login                                       login
+  password abc123                             password abc321
+          \                                         /
+           \                                       /
+            +-----------> [ USER MODE ] <---------+
+                                 |
+                         enable secret root
+                                 |
+                                 v
+                          [ ENABLE MODE ]
+
+```
+
+#### 1. Console ve vty (Telnet) Şifrelerini Ayarlamak
+
+Cihazın fiziksel kapısına ve sanal kapısına şifre koymak için önce o kapının içine girmeliyiz:
+
+* Console için: `line console 0` *(Sıfır, cihazda sadece 1 tane console portu olduğu içindir).*
+* Telnet için: `line vty 0 15` *(Sanal terminal hatlarına giriyoruz).*
+
+Bu modların içine girdikten sonra her iki kapı için de değişmeyen 2 altın komutumuz vardır:
+
+* **`password <password-value>`:** O kapıda kullanılacak gerçek şifreyi (Örn: abc123 veya abc321) tanımlar.
+* **`login`:** İşte bu çok kritik! Bu komut, IOS işletim sistemine *"Biri bu hattan bağlanmaya çalışırsa ona kullanıcı adı sorma, SADECE bu basit ortak şifreyi sor!"* talimatını verir. `login` komutunu yazmayı unutursan, switch şifreyi kontrol etmez!
+
+#### 2. Enable Mode Şifresini Ayarlamak
+
+User Mode'a ister Console'dan ister Telnet'ten girilmiş olsun, sistemi değiştirebilmek için geçilmesi gereken son kale Enable Mode'dur. Bu şifre spesifik bir `line` altında değil, doğrudan **Global Configuration Mode** altında ayarlanır.
+
+* Komut: **`enable secret <password-value>`** (Örn: `enable secret root`)
+
+Eski IOS sürümlerinde Enable Mode şifresini belirlemek için `enable password <password-value>` komutu kullanılırdı ve bu komut cihazlarda yine de duruyor. **ANCAK**, `enable password` komutu güvenlik açısından çok zayıftır (şifreyi düz metin olarak tutar). `enable secret` komutu ise şifreyi güçlü bir hash algoritmasıyla şifreler. Sistem odasındaki altın kural şudur: Gerçek ağlarda **HER ZAMAN** `enable secret` kullan!
