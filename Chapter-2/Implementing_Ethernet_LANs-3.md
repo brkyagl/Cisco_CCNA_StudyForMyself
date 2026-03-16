@@ -204,3 +204,57 @@ IOU1#
 ```
 
 Dikkat ettiysen, `line console 0` içine girip işimizi bitirdikten sonra tekrar Global Config Mode dönmek için **`exit`** komutunu kullandık. Ancak `line vty 0` içindeki işimiz bittiğinde, konfigürasyonu tamamen kapatıp en baştaki Privileged Mode'a tek seferde fırlamak için **`end`** komutunu kullandık. Bu ince detay, CLI üzerinde hız kazanmak için harika bir taktiktir.
+
+## Çalışan Ayarları Doğrulamak
+
+Cihaza girdiğimiz yapılandırmaların aktif olarak çalışıp çalışmadığını ve sisteme nasıl kaydedildiğini görmek için **`show running-config`** komutunu kullanırız.
+
+Bu komut, switch'in o anki tüm hafızasını (çalışan dosyasını) ekrana döker. Sayfalarca süren bu çıktının içinde kaybolmamak için, sadece bizim girdiğimiz şifre komutlarına odaklanarak aradaki alakasız satırları (interface detayları vb.) sileceğim ve temiz bir özet sunmak istiyotrum.
+
+### Running-Config Çıktısı 
+
+Aşağıdaki çıktı, bir önceki adımda girdiğimiz komutların `running-config` dosyasındaki son halidir:
+
+```text
+IOU1#show running-config 
+Building configuration...
+
+Current configuration : 1697 bytes
+!
+! Last configuration change at 23:38:00 +03 Mon Mar 16 2026
+!
+version 15.1
+!
+hostname IOU1
+!
+enable secret 4 G/B7HFBy3X4vck5Jf8hiSvSeRAsFVRFKJZvp5LBqRv6
+!
+control-plane
+!               
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ password abc123
+ logging synchronous
+ login    
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0
+ password abc321
+ login    
+line vty 1 4
+ login    
+!         
+```
+
+Bu çıktıya bir ağ uzmanı gözüyle baktığında şu iki devasa detayı anında fark etmelisin:
+
+**1. Enable Secret'ın Gücü (Şifrelenmiş Metin):**
+Fark ettiysen, `line con 0` altındaki "abc123" ve `line vty` altındaki "abc321" şifreleri kabak gibi Cleartext olarak görünüyor. Ancak en başta `enable secret root` olarak girdiğimiz o süper yetkili şifre, çıktıda **`4 G/B7HFBy3X4vck5Jf8hiSvSeRAsFVRFKJZvp5LBqRv6`** şeklinde bir hash'e dönüşmüş.
+İşte `enable secret` komutunun gücü budur; şifreyi MD5 (veya daha güçlü sha256) bir algoritmayla şifreleyerek, omzunun üzerinden veya konfigürasyon dosyasından şifreni çalmaya çalışanları engeller. (4 -> sha256 başka örnek 5 -> md5.)
+
+**2. VTY Hatlarının İkiye Bölünmesi:**
+
+> Eski IOS sürümlerinde switch'ler ve router'lar sadece 5 tane uzaktan bağlantı hattını (0, 1, 2, 3, 4) destekliyordu. Sonradan bu sayı 16'ya (0-15) çıkarıldığında, eski sistemlerle uyumluluğu bozmamak adına IOS arka planda her zaman ilk 5 hattı (0-4) ayrı, sonradan eklenen 11 hattı (5-15) ayrı listelemeye devam etti.
