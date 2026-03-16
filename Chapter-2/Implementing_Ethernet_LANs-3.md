@@ -158,3 +158,49 @@ User Mode'a ister Console'dan ister Telnet'ten girilmiş olsun, sistemi değişt
 * Komut: **`enable secret <password-value>`** (Örn: `enable secret root`)
 
 Eski IOS sürümlerinde Enable Mode şifresini belirlemek için `enable password <password-value>` komutu kullanılırdı ve bu komut cihazlarda yine de duruyor. **ANCAK**, `enable password` komutu güvenlik açısından çok zayıftır (şifreyi düz metin olarak tutar). `enable secret` komutu ise şifreyi güçlü bir hash algoritmasıyla şifreler. Sistem odasındaki altın kural şudur: Gerçek ağlarda **HER ZAMAN** `enable secret` kullan!
+
+## Configuration: Basic Passwords (Temel Şifreleme Adımları)
+
+Console, Telnet (vty) ve Enable şifrelerini cihaza tanımlamak için sırasıyla şu 3 ana adımı izlemelisin:
+
+**Adım 1. Enable Mode Şifresini Ayarlamak:**
+
+* Global Configuration Mode'a gir ve `enable secret <password-value>` komutuyla şifreyi belirle.
+
+**Adım 2. Console Şifresini Ayarlamak:**
+
+* **A.** Console configuration mode'a girmek için `line console 0` komutunu kullan.
+* **B.** Console şifresinin değerini belirlemek için `password <password-value>` subcommand'ı gir.
+* **C.** Basit şifre güvenliğini aktif hale getirmek ve cihazın şifre sormasını sağlamak için `login` subcommand'ı kullan.
+
+**Adım 3. Telnet (vty) Şifresini Ayarlamak:**
+
+* **A.** Cihazdaki 16 adet sanal terminal hattının (0'dan 15'e kadar numaralandırılmış) tamamı için vty configuration mode'a girmek adına `line vty 0 15` komutunu kullan.
+* **B.** Uzaktan erişim şifresinin değerini belirlemek için `password <password-value>` subcommand'ı gir.
+* **C.** vty hatlarında basit şifre güvenliğini aktif hale getirmek için `login` subcommand'ı kullan.
+
+### CLI Üzerinde Şifreleri Uygulamak 
+
+Aşağıdaki çıktı, tüm o adımların bir switch üzerinde nasıl uygulandığını gösteriyor.
+
+```text
+IOU1#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+IOU1(config)#enable secret root
+
+IOU1(config)#line console 0
+
+IOU1(config-line)#password abc123
+IOU1(config-line)#login
+IOU1(config-line)#exit
+
+IOU1(config)#line vty 0
+
+IOU1(config-line)#password abc321
+IOU1(config-line)#login
+IOU1(config-line)#end
+
+IOU1#
+```
+
+Dikkat ettiysen, `line console 0` içine girip işimizi bitirdikten sonra tekrar Global Config Mode dönmek için **`exit`** komutunu kullandık. Ancak `line vty 0` içindeki işimiz bittiğinde, konfigürasyonu tamamen kapatıp en baştaki Privileged Mode'a tek seferde fırlamak için **`end`** komutunu kullandık. Bu ince detay, CLI üzerinde hız kazanmak için harika bir taktiktir.
