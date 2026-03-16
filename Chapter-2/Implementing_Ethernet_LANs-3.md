@@ -257,4 +257,6 @@ Fark ettiysen, `line con 0` altındaki "abc123" ve `line vty` altındaki "abc321
 
 **2. VTY Hatlarının İkiye Bölünmesi:**
 
-> Eski IOS sürümlerinde switch'ler ve router'lar sadece 5 tane uzaktan bağlantı hattını (0, 1, 2, 3, 4) destekliyordu. Sonradan bu sayı 16'ya (0-15) çıkarıldığında, eski sistemlerle uyumluluğu bozmamak adına IOS arka planda her zaman ilk 5 hattı (0-4) ayrı, sonradan eklenen 11 hattı (5-15) ayrı listelemeye devam etti.
+> Eski IOS sürümlerinde switch'ler ve router'lar sadece 5 tane uzaktan bağlantı hattını (0, 1, 2, 3, 4) destekliyordu. Sonradan bu sayı 16'ya (0-15) çıkarıldığında, eski sistemlerle uyumluluğu bozmamak adına IOS arka planda her zaman ilk 5 hattı (0-4) ayrı, sonradan eklenen 11 hattı (5-15) ayrı listelemeye devam etti. Ben `IOU1(config)#line vty 0 4` yapabilirim çünkü GNS3'te kullandığım switchle alakalı ama 0 15 olarak şu şekilde: `IOU1(config)#line vty 0 15`.
+
+
