@@ -1041,9 +1041,9 @@ trace to 1.1.1.1, 8 hops max, press Ctrl+C to stop
 
 **Beklenen Çıktı:**
 
-1. `1.1.1.254` (Önce R1'e gitti)
-2. `12.0.0.2`  (R1 onu R2'ye fırlattı)
-3. `2.2.2.2`   (R2 onu İrem'e teslim etti)
+1. `2.2.2.254` (Önce R2'e gitti)
+2. `12.0.0.1`  (R2 onu R1'e fırlattı)
+3. `1.1.1.1`   (R1 onu Berkay'a teslim etti)
 
 ---
 
